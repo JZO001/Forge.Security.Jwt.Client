@@ -1,0 +1,231 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Forge.Security.Jwt.Client</name>
+    </assembly>
+    <members>
+        <member name="T:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory">
+            <summary>Represents a HttpClient with a unique configuration</summary>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.#ctor(System.Net.Http.HttpClient)">
+            <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory" /> class.</summary>
+            <param name="client">The client.</param>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.GetHttpClient">
+            <summary>Gets the HTTP client.</summary>
+            <value>The HTTP client.</value>
+        </member>
+        <member name="T:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService">
+            <summary>API communication implementation</summary>
+        </member>
+        <member name="E:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.OnPrepareRequest">
+            <summary>Occurs before the request sent out to prepare it manually</summary>
+        </member>
+        <member name="E:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.OnPrepareResponse">
+            <summary>Occurs after the response arrived. Gain full control over the content deserialization.</summary>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.#ctor(Forge.Security.Jwt.Shared.Client.Api.IApiCommunicationHttpClientFactory)">
+            <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService" /> class.</summary>
+            <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
+        </member>
+        <member name="P:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.DefaultEncoding">
+            <summary>Gets or sets the default encoding for sending.</summary>
+            <value>The default encoding is UTF8.</value>
+        </member>
+        <member name="P:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.AccessToken">
+            <summary>Gets or sets the access token.</summary>
+            <value>The JWT bearer access token, which used for the Api calls. It will be added to the header.</value>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.GetAsync``1(System.String)">
+            <summary>Gets data</summary>
+            <typeparam name="TResult">The type of the result.</typeparam>
+            <param name="uri">The URI.</param>
+            <returns>The result object</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.PostAsync``2(System.String,``0)">
+            <summary>Posts data or creates a resource</summary>
+            <typeparam name="TData">The type of the data.</typeparam>
+            <typeparam name="TResult">The type of the result data.</typeparam>
+            <param name="uri">The URI.</param>
+            <param name="data">The data.</param>
+            <returns>The result data</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.PutAsync``2(System.String,``0)">
+            <summary>Puts data or update a resource</summary>
+            <typeparam name="TData">The type of the data.</typeparam>
+            <typeparam name="TResult">The type of the result data.</typeparam>
+            <param name="uri">The URI.</param>
+            <param name="data">The data.</param>
+            <returns>The result data</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.DeleteAsync``1(System.String)">
+            <summary>Deletes a</summary>
+            <typeparam name="TResult">The type of the result.</typeparam>
+            <param name="uri">The URI.</param>
+            <returns>The return data</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.ApiCall``1(System.Net.Http.HttpMethod,System.String,System.Object)">
+            <summary>Perform the API call with the given parameters.</summary>
+            <typeparam name="TResult">The type of the result.</typeparam>
+            <param name="httpMethod">The HTTP method.</param>
+            <param name="uri">The URI.</param>
+            <param name="data">The data.</param>
+            <returns>The return value</returns>
+            <exception cref="T:Forge.Security.Jwt.Shared.Client.Api.HttpRequestException"></exception>
+        </member>
+        <member name="T:Forge.Security.Jwt.Client.Services.AuthenticationService">
+            <summary>User service with basic features</summary>
+        </member>
+        <member name="E:Forge.Security.Jwt.Client.Services.AuthenticationService.OnUserAuthenticationStateChanged">
+            <summary>Occurs when a user authentication state changed</summary>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.#ctor(Forge.Security.Jwt.Shared.Client.Api.ITokenizedApiCommunicationService,Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider,Forge.Security.Jwt.Shared.Client.Services.IAdditionalData)">
+            <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Services.AuthenticationService" /> class.</summary>
+            <param name="apiService">The API service.</param>
+            <param name="authenticationStateProvider">The authentication state provider.</param>
+            <param name="additionalData">Optionally the logout data</param>
+            <exception cref="T:System.ArgumentNullException">apiService
+            or
+            authenticationStateProvider</exception>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.Finalize">
+            <summary>Finalizes an instance of the <see cref="T:Forge.Security.Jwt.Client.Services.AuthenticationService" /> class.</summary>
+        </member>
+        <member name="P:Forge.Security.Jwt.Client.Services.AuthenticationService.AuthenticationUri">
+            <summary>Gets or sets the authentication URI.</summary>
+            <value>The authentication URI.</value>
+        </member>
+        <member name="P:Forge.Security.Jwt.Client.Services.AuthenticationService.LogoutUri">
+            <summary>Gets or sets the logout URI.</summary>
+            <value>The logout URI.</value>
+        </member>
+        <member name="P:Forge.Security.Jwt.Client.Services.AuthenticationService.ValidateTokenUri">
+            <summary>Gets or sets the validation URI.</summary>
+            <value>The logout URI.</value>
+        </member>
+        <member name="P:Forge.Security.Jwt.Client.Services.AuthenticationService.RefreshUri">
+            <summary>Gets or sets the refresh URI.</summary>
+            <value>The logout URI.</value>
+        </member>
+        <member name="P:Forge.Security.Jwt.Client.Services.AuthenticationService.AdditionalData">
+            <summary>Gets or sets the additional data, if something need to send at requests</summary>
+            <value>The logout data.</value>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.AuthenticateUserAsync``2(``0)">
+            <summary>Authenticates the user with the given credentials</summary>
+            <typeparam name="TAuthCredentials">The type of the authentication credentials.</typeparam>
+            <typeparam name="TAuthResult">The type of the authentication result.</typeparam>
+            <param name="userCredentials">The user credentials.</param>
+            <returns>Authentication result data</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.GetCurrentUserInfoAsync">
+            <summary>Gets the current user information.</summary>
+            <returns>A data object which responded back by the provider/server/service</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.LogoutUserAsync">
+            <summary>Logs out the current user.</summary>
+            <returns>Task</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.ValidateTokenAsync">
+            <summary>Validates the current token.</summary>
+            <returns>True, if the token is valid, otherwise, False.</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.RefreshTokenAsync">
+            <summary>Refreshes the current token and get a new one.</summary>
+            <returns>The new token, or null, if it is not valid.</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.Dispose">
+            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.Dispose(System.Boolean)">
+            <summary>Releases unmanaged and - optionally - managed resources.</summary>
+            <param name="disposing">
+              <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        </member>
+        <member name="T:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider">
+            <summary>Jwt Token based AuthenticationStateProvider implementation</summary>
+        </member>
+        <member name="F:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.PARSED_TOKEN_STORAGE_KEY">
+            <summary>The parsed token storage key</summary>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.#ctor(Forge.Security.Jwt.Shared.Storage.IStorage{Forge.Security.Jwt.Shared.Client.Models.ParsedTokenData},Forge.Security.Jwt.Shared.Client.Api.ITokenizedApiCommunicationService)">
+            <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider" /> class.</summary>
+            <param name="storage">The storage service.</param>
+            <param name="apiService">The communication service.</param>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.GetAuthenticationStateAsync">
+            <summary>Asynchronously gets an <see cref="T:Microsoft.AspNetCore.Components.Authorization.AuthenticationState">AuthenticationState</see> that describes the current user.</summary>
+            <returns>
+            A task that, when resolved, gives an <see cref="T:Microsoft.AspNetCore.Components.Authorization.AuthenticationState">AuthenticationState</see> instance that describes the current user.
+            </returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.AuthenticateUser``1(``0)">
+            <summary>Authenticates the user with the gives login response</summary>
+            <typeparam name="TAuthenticationResponse">The type of the login response.</typeparam>
+            <param name="authenticationResponse">The login response.</param>
+            <returns>Task</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.AuthenticateUser(Forge.Security.Jwt.Shared.Client.Models.ParsedTokenData)">
+            <summary>Authenticates the user with the given authentication response.</summary>
+            <param name="parsedTokenData">The parsed token data.</param>
+            <exception cref="T:Microsoft.IdentityModel.Tokens.SecurityTokenException">Invalid token</exception>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.LogoutUser">
+            <summary>Marks the user as logged out</summary>
+            <returns>Task</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.AuthenticateUserInner(Forge.Security.Jwt.Shared.Client.Models.ParsedTokenData)">
+            <summary>Authenticates the user with the given token</summary>
+            <param name="parsedTokenData">The parsed token data.</param>
+            <exception cref="T:Microsoft.IdentityModel.Tokens.SecurityTokenException">Invalid token</exception>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.GetParsedTokenDataAsync">
+            <summary>Gets the parsed/extracted data asynchronously from the security token.</summary>
+            <returns>
+              ParsedTokenData
+            </returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.ParseToken``1(``0)">
+            <summary>Parses the given authentication tokens.</summary>
+            <typeparam name="TAuthenticationResponse">The type of the login response.</typeparam>
+            <param name="loginResponse">The login response.</param>
+            <returns>
+              ParsedTokenData
+            </returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.IsTokenExpired(System.DateTime)">
+            <summary>Determines whether the token expired</summary>
+            <param name="expireDate">The expire date.</param>
+            <returns>
+              <c>true</c> if the token expired, otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="T:Forge.Security.Jwt.Client.Services.JwtTokenRefreshService">
+            <summary>Automatically refresh the token before it expires</summary>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshService.#ctor(Forge.Security.Jwt.Shared.Client.Services.IAuthenticationService,Forge.Security.Jwt.Shared.Client.Services.IJwtTokenAuthenticationStateProvider)">
+            <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Services.JwtTokenRefreshService" /> class.</summary>
+            <param name="authenticationService">The authentication service.</param>
+            <param name="jwtTokenAuthenticationStateProvider">The JWT token authentication state provider.</param>
+            <exception cref="T:System.ArgumentNullException">authenticationService
+            or
+            jwtTokenAuthenticationStateProvider</exception>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshService.StartAsync(System.Threading.CancellationToken)">
+            <summary>Starts the service</summary>
+            <param name="cancellationToken">CancellationToken</param>
+            <returns>
+              Task
+            </returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshService.StopAsync(System.Threading.CancellationToken)">
+            <summary>Stops the service</summary>
+            <param name="cancellationToken">CancellationToken</param>
+            <returns>
+              Task
+            </returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshService.Dispose">
+            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        </member>
+    </members>
+</doc>
