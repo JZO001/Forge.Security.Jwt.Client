@@ -29,7 +29,6 @@ namespace Forge.Security.Jwt.Client.Services
         private readonly IStorage<ParsedTokenData> _storageService;
         private readonly ITokenizedApiCommunicationService _apiService;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IJSRuntime _jsRuntime;
 
         /// <summary>The parsed token storage key</summary>
         public const string PARSED_TOKEN_STORAGE_KEY = "__parsedToken";
@@ -53,23 +52,19 @@ namespace Forge.Security.Jwt.Client.Services
         /// <param name="storage">The storage service.</param>
         /// <param name="apiService">The communication service.</param>
         /// <param name="serviceProvider">The service provider</param>
-        /// <param name="jsRuntime">The js runtime</param>
         public JwtTokenAuthenticationStateProvider(ILogger<JwtTokenAuthenticationStateProvider> logger, 
             IStorage<ParsedTokenData> storage, 
             ITokenizedApiCommunicationService apiService,
-            IServiceProvider serviceProvider,
-            IJSRuntime jsRuntime)
+            IServiceProvider serviceProvider)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (apiService == null) throw new ArgumentNullException(nameof(apiService));
             if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
-            if (jsRuntime == null) throw new ArgumentNullException(nameof(jsRuntime));
             _logger = logger;
             _storageService = storage;
             _apiService = apiService;
             _serviceProvider = serviceProvider;
-            _jsRuntime = jsRuntime;
 
             _logger.LogDebug($"JwtTokenAuthenticationStateProvider.ctor, IStorage<ParsedTokenData>, hash: {storage.GetHashCode()}");
             _logger.LogDebug($"JwtTokenAuthenticationStateProvider.ctor, ITokenizedApiCommunicationService, hash: {apiService.GetHashCode()}");
@@ -83,7 +78,20 @@ namespace Forge.Security.Jwt.Client.Services
         {
             if (string.IsNullOrWhiteSpace(_apiService.UserAgent))
             {
-                _apiService.UserAgent = await _jsRuntime.InvokeAsync<string>("eval", "(function() { return window.navigator.userAgent; })();");
+                IJSRuntime jsRuntime = null;
+                try
+                {
+                    jsRuntime = _serviceProvider.GetService(typeof(IJSRuntime)) as IJSRuntime;
+                }
+                catch (Exception) { }
+                if (jsRuntime == null)
+                {
+                    _apiService.UserAgent = ".";
+                }
+                else
+                {
+                    _apiService.UserAgent = await jsRuntime.InvokeAsync<string>("eval", "(function() { return window.navigator.userAgent; })();");
+                }
             }
             if (_refreshService != null && _lastHashcode != GetHashCode())
             {
