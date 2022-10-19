@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Forge.Security.Jwt.Shared.Client.Api;
+using Microsoft.Extensions.Logging;
+using Forge.Security.Jwt.Shared.Serialization;
+using Microsoft.Extensions.Options;
 
 namespace Forge.Security.Jwt.Client.Api
 {
@@ -14,7 +14,10 @@ namespace Forge.Security.Jwt.Client.Api
     public class TokenizedApiCommunicationService : ITokenizedApiCommunicationService
     {
 
+        private readonly ILogger<TokenizedApiCommunicationService> _logger;
         private readonly IApiCommunicationHttpClientFactory _apiCommunicationHttpClientFactory;
+        private readonly ISerializationProvider _serializer;
+        private readonly TokenizedApiCommunicationServiceOptions _options;
 
         /// <summary>Occurs before the request sent out to prepare it manually</summary>
         public event EventHandler<HttpRequestMessageEventArgs>
@@ -33,16 +36,63 @@ namespace Forge.Security.Jwt.Client.Api
             OnPrepareResponse;
 
         /// <summary>Initializes a new instance of the <see cref="TokenizedApiCommunicationService" /> class.</summary>
+        /// <param name="logger">The logger.</param>
         /// <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
-        public TokenizedApiCommunicationService(IApiCommunicationHttpClientFactory apiCommunicationHttpClientFactory)
+        /// <param name="serializer">The serializer.</param>
+        /// <param name="options">The options.</param>
+        public TokenizedApiCommunicationService(ILogger<TokenizedApiCommunicationService> logger, 
+            IApiCommunicationHttpClientFactory apiCommunicationHttpClientFactory,
+            ISerializationProvider serializer,
+            IOptions<TokenizedApiCommunicationServiceOptions> options)
         {
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (apiCommunicationHttpClientFactory == null) throw new ArgumentNullException(nameof(apiCommunicationHttpClientFactory));
+            if (serializer == null) throw new ArgumentNullException(nameof(serializer));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            _logger = logger;
             _apiCommunicationHttpClientFactory = apiCommunicationHttpClientFactory;
+            _serializer = serializer;
+            _options = options.Value;
+
+            _logger.LogDebug($"TokenizedApiCommunicationService.ctor, IApiCommunicationHttpClientFactory, hash: {apiCommunicationHttpClientFactory.GetHashCode()}");
+            _logger.LogDebug($"TokenizedApiCommunicationService.ctor, ISerializationProvider, hash: {serializer.GetHashCode()}");
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="TokenizedApiCommunicationService" /> class.</summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
+        /// <param name="serializer">The serializer.</param>
+        /// <param name="options">The options.</param>
+        public TokenizedApiCommunicationService(ILogger<TokenizedApiCommunicationService> logger,
+            IApiCommunicationHttpClientFactory apiCommunicationHttpClientFactory,
+            ISerializationProvider serializer,
+            TokenizedApiCommunicationServiceOptions options)
+        {
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
+            if (apiCommunicationHttpClientFactory == null) throw new ArgumentNullException(nameof(apiCommunicationHttpClientFactory));
+            if (serializer == null) throw new ArgumentNullException(nameof(serializer));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            _logger = logger;
+            _apiCommunicationHttpClientFactory = apiCommunicationHttpClientFactory;
+            _serializer = serializer;
+            _options = options;
+
+            _logger.LogDebug($"TokenizedApiCommunicationService.ctor, IApiCommunicationHttpClientFactory, hash: {apiCommunicationHttpClientFactory.GetHashCode()}");
+            _logger.LogDebug($"TokenizedApiCommunicationService.ctor, ISerializationProvider, hash: {serializer.GetHashCode()}");
         }
 
         /// <summary>Gets or sets the default encoding for sending.</summary>
         /// <value>The default encoding is UTF8.</value>
         public Encoding DefaultEncoding { get; set; } = Encoding.UTF8;
+
+        /// <summary>Gets or sets the user agent.</summary>
+        /// <value>The user agent.</value>
+        public string
+#if NETSTANDARD2_0
+#else
+            ?
+#endif
+            UserAgent { get; set; }
 
         /// <summary>Gets or sets the access token.</summary>
         /// <value>The JWT bearer access token, which used for the Api calls. It will be added to the header.</value>
@@ -148,20 +198,21 @@ namespace Forge.Security.Jwt.Client.Api
                 var prepareRequestEvent = OnPrepareRequest;
                 if (prepareRequestEvent == null)
                 {
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    _options.Request_Header_Accepts.ForEach(item => request.Headers.Accept.Add(item));
 
                     if (data != null)
                     {
-                        var options = new JsonSerializerOptions
-                        {
-                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                        };
-                        request.Content = new StringContent(JsonSerializer.Serialize(data, options), DefaultEncoding, "application/json");
+                        request.Content = new StringContent(_serializer.Serialize(data), _options.RequestEncoding, _options.RequestMediaType);
                     }
 
                     if (!string.IsNullOrEmpty(AccessToken))
                     {
                         request.Headers.Add("Authorization", $"Bearer {AccessToken}");
+                    }
+
+                    if (!string.IsNullOrEmpty(UserAgent))
+                    {
+                        request.Headers.Add("user-agent", UserAgent);
                     }
                 }
                 else
@@ -169,7 +220,10 @@ namespace Forge.Security.Jwt.Client.Api
                     prepareRequestEvent(this, new HttpRequestMessageEventArgs(request, data));
                 }
 
-                HttpResponseMessage response = await _apiCommunicationHttpClientFactory.GetHttpClient().SendAsync(request);
+                HttpClient httpClient = _apiCommunicationHttpClientFactory.GetHttpClient();
+                _logger.LogDebug($"ApiCall, sending {httpMethod.Method} to {httpClient.BaseAddress}/{uri}");
+                HttpResponseMessage response = await httpClient.SendAsync(request);
+                _logger.LogDebug($"ApiCall, response arrived from {httpClient.BaseAddress}/{uri}, method: {httpMethod.Method}");
 
                 string
 #if NETSTANDARD2_0
@@ -180,17 +234,14 @@ namespace Forge.Security.Jwt.Client.Api
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    _logger.LogDebug($"ApiCall, response indicates an unsuccessful operation from {httpClient.BaseAddress}/{uri}, method: {httpMethod.Method}");
                     throw new Shared.Client.Api.HttpRequestException(response.StatusCode, jsonResult);
                 }
 
                 var prepareResponseEvent = OnPrepareResponse;
                 if (prepareResponseEvent == null)
                 {
-                    var options = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    };
-                    result = JsonSerializer.Deserialize<TResult>(jsonResult, options);
+                    result = _serializer.Deserialize<TResult>(jsonResult);
                 }
                 else
                 {
@@ -212,7 +263,7 @@ namespace Forge.Security.Jwt.Client.Api
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"{e.GetType().Name} : {e.Message}");
+                _logger.LogError(e, e.Message);
                 throw;
             }
 
