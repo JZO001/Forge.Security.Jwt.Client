@@ -191,6 +191,7 @@ namespace Forge.Security.Jwt.Client.Api
 #endif
                 result = default;
 
+            HttpClient httpClient = null;
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(httpMethod, uri);
@@ -220,7 +221,7 @@ namespace Forge.Security.Jwt.Client.Api
                     prepareRequestEvent(this, new HttpRequestMessageEventArgs(request, data));
                 }
 
-                HttpClient httpClient = _apiCommunicationHttpClientFactory.GetHttpClient();
+                httpClient = _apiCommunicationHttpClientFactory.GetHttpClient();
                 _logger.LogDebug($"ApiCall, sending {httpMethod.Method} to {httpClient.BaseAddress}/{uri}");
                 HttpResponseMessage response = await httpClient.SendAsync(request);
                 _logger.LogDebug($"ApiCall, response arrived from {httpClient.BaseAddress}/{uri}, method: {httpMethod.Method}");
@@ -265,6 +266,10 @@ namespace Forge.Security.Jwt.Client.Api
             {
                 _logger.LogError(e, e.Message);
                 throw;
+            }
+            finally
+            {
+                httpClient?.Dispose();
             }
 
 #pragma warning disable CS8603 // Possible null reference return.
