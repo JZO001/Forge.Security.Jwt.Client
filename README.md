@@ -64,5 +64,8 @@ Please find Forge.Yode solution in my repositories, the "Apps" namespace entries
 Please also check the following projects in my repositories:
 - Forge.Yoda
 - Forge.Security.Jwt.Service
+- Forge.Security.Jwt.Service.Storage.SqlServer
 - Forge.Security.Jwt.Client
 - Forge.Security.Jwt.Client.Storage.Browser
+- Forge.Wasm.BrowserStorages
+- Forge.Wasm.BrowserStorages.NewtonSoft.Json
