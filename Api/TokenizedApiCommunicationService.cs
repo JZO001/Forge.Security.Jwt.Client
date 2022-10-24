@@ -222,9 +222,9 @@ namespace Forge.Security.Jwt.Client.Api
                 }
 
                 httpClient = _apiCommunicationHttpClientFactory.GetHttpClient();
-                _logger.LogDebug($"ApiCall, sending {httpMethod.Method} to {httpClient.BaseAddress}/{uri}");
+                _logger.LogDebug($"ApiCall, sending {httpMethod.Method} to {httpClient.BaseAddress}{uri}");
                 HttpResponseMessage response = await httpClient.SendAsync(request);
-                _logger.LogDebug($"ApiCall, response arrived from {httpClient.BaseAddress}/{uri}, method: {httpMethod.Method}");
+                _logger.LogDebug($"ApiCall, response arrived from {httpClient.BaseAddress}{uri}, method: {httpMethod.Method}");
 
                 string
 #if NETSTANDARD2_0
@@ -235,7 +235,7 @@ namespace Forge.Security.Jwt.Client.Api
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogDebug($"ApiCall, response indicates an unsuccessful operation from {httpClient.BaseAddress}/{uri}, method: {httpMethod.Method}");
+                    _logger.LogDebug($"ApiCall, response indicates an unsuccessful operation from {httpClient.BaseAddress}{uri}, method: {httpMethod.Method}");
                     throw new Shared.Client.Api.HttpRequestException(response.StatusCode, jsonResult);
                 }
 

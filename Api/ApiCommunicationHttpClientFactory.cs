@@ -48,7 +48,7 @@ namespace Forge.Security.Jwt.Client.Api
         public HttpClient GetHttpClient()
         {
             HttpClient httpClient = null;
-            if (_options.HttpMessageHandler == null)
+            if (_options.HttpMessageHandlerFactory == null)
             {
                 _logger.LogDebug($"HttpMessageHandler not set, BaseAddress: {_options.BaseAddress}");
                 httpClient = new HttpClient { BaseAddress = new Uri(_options.BaseAddress) };
@@ -56,7 +56,7 @@ namespace Forge.Security.Jwt.Client.Api
             else
             {
                 _logger.LogDebug($"HttpMessageHandler presents, BaseAddress: {_options.BaseAddress}");
-                httpClient = new HttpClient(_options.HttpMessageHandler) { BaseAddress = new Uri(_options.BaseAddress) };
+                httpClient = new HttpClient(_options.HttpMessageHandlerFactory()) { BaseAddress = new Uri(_options.BaseAddress) };
             }
             return httpClient;
         }
