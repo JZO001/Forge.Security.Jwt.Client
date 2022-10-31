@@ -117,7 +117,7 @@ namespace Forge.Security.Jwt.Client.Services
 #endif
             > GetCurrentUserInfoAsync()
         {
-            ParsedTokenData result = await ((IJwtTokenAuthenticationStateProvider)_authenticationStateProvider).GetParsedTokenDataAsync();
+            ParsedTokenData result = await _authenticationStateProvider.GetParsedTokenDataAsync();
 
             if (result == null)
             {
@@ -274,7 +274,7 @@ namespace Forge.Security.Jwt.Client.Services
             else
             {
                 _logger.LogDebug("AuthenticationStateChangedEventHandler, no authenticated user");
-                OnUserAuthenticationStateChanged?.Invoke(this, new UserDataEventArgs(String.Empty));
+                OnUserAuthenticationStateChanged?.Invoke(this, new UserDataEventArgs(string.Empty));
             }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
