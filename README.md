@@ -1,5 +1,5 @@
 # Forge.Security.Jwt.Client
-Forge.Security.Jwt.Client is a library that provides client side authentication service for WASM / MAUI client applications.
+Forge.Security.Jwt.Client is a library that provides client side authentication service for client applications.
 
 
 ## Installing
