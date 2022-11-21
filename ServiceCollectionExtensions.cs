@@ -28,18 +28,28 @@ namespace Forge.Security.Jwt.Client
         /// Registers the Forge Jwt Client side security services as scoped.
         /// </summary>
         /// <returns>IServiceCollection</returns>
-        public static IServiceCollection AddForgeJwtClientAuthenticationCore(this IServiceCollection services, Action<JwtClientAuthenticationCoreOptions> configure)
+        public static IServiceCollection AddForgeJwtClientAuthenticationCore(this IServiceCollection services, Action<JwtClientAuthenticationCoreOptions>
+#if NETSTANDARD2_0
+#else
+            ?
+#endif
+            configure)
         {
             //.AddHostedService<JwtTokenRefreshHostedService>()
             return services
+                .AddSingleton<ISerializationProvider, SystemTextJsonSerializer>()
+                .AddSingleton<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
+                .AddSingleton<ITokenizedApiCommunicationService, TokenizedApiCommunicationService>()
                 .AddScoped<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
-                .AddScoped<ISerializationProvider, SystemTextJsonSerializer>()
-                .AddScoped<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
-                .AddScoped<ITokenizedApiCommunicationService, TokenizedApiCommunicationService>()
                 .AddScoped<AuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
                 .AddScoped<IAdditionalData, AdditionalData>(serviceProvider =>
                 {
-                    IOptions<JwtClientAuthenticationCoreOptions> options = serviceProvider.GetService<IOptions<JwtClientAuthenticationCoreOptions>>();
+                    IOptions<JwtClientAuthenticationCoreOptions> options = serviceProvider.GetService<IOptions<JwtClientAuthenticationCoreOptions>>()
+#if NETSTANDARD2_0
+#else
+                    !
+#endif
+                    ;
                     AdditionalData logoutData = new AdditionalData();
                     logoutData.SecondaryKeys.AddRange(options.Value.SecondaryKeys);
                     return logoutData;
@@ -63,18 +73,28 @@ namespace Forge.Security.Jwt.Client
         /// Registers the Forge Jwt Client side security services as singletons.
         /// </summary>
         /// <returns>IServiceCollection</returns>
-        public static IServiceCollection AddForgeJwtClientAuthenticationCoreAsSingleton(this IServiceCollection services, Action<JwtClientAuthenticationCoreOptions> configure)
+        public static IServiceCollection AddForgeJwtClientAuthenticationCoreAsSingleton(this IServiceCollection services, Action<JwtClientAuthenticationCoreOptions>
+#if NETSTANDARD2_0
+#else
+            ?
+#endif
+            configure)
         {
             //.AddHostedService<JwtTokenRefreshHostedService>()
             return services
-                .AddSingleton<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
                 .AddSingleton<ISerializationProvider, SystemTextJsonSerializer>()
                 .AddSingleton<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
                 .AddSingleton<ITokenizedApiCommunicationService, TokenizedApiCommunicationService>()
+                .AddSingleton<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
                 .AddSingleton<AuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
                 .AddSingleton<IAdditionalData, AdditionalData>(serviceProvider =>
                 {
-                    IOptions<JwtClientAuthenticationCoreOptions> options = serviceProvider.GetService<IOptions<JwtClientAuthenticationCoreOptions>>();
+                    IOptions<JwtClientAuthenticationCoreOptions> options = serviceProvider.GetService<IOptions<JwtClientAuthenticationCoreOptions>>()
+#if NETSTANDARD2_0
+#else
+                    !
+#endif
+                    ;
                     AdditionalData logoutData = new AdditionalData();
                     logoutData.SecondaryKeys.AddRange(options.Value.SecondaryKeys);
                     return logoutData;

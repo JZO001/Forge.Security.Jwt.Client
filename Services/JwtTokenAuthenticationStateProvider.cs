@@ -22,7 +22,12 @@ namespace Forge.Security.Jwt.Client.Services
     public class JwtTokenAuthenticationStateProvider : AuthenticationStateProvider, IJwtTokenAuthenticationStateProvider
     {
 
-        private static IRefreshTokenService _refreshService;
+        private static IRefreshTokenService
+#if NETSTANDARD2_0
+#else
+            ?
+#endif
+            _refreshService;
         private static int _lastHashcode = 0;
 
         private readonly ILogger<JwtTokenAuthenticationStateProvider> _logger;
@@ -78,7 +83,12 @@ namespace Forge.Security.Jwt.Client.Services
         {
             if (string.IsNullOrWhiteSpace(_apiService.UserAgent))
             {
-                IJSRuntime jsRuntime = null;
+                IJSRuntime
+#if NETSTANDARD2_0
+#else
+                    ?
+#endif
+                    jsRuntime = null;
                 try
                 {
                     jsRuntime = _serviceProvider.GetService(typeof(IJSRuntime)) as IJSRuntime;
@@ -95,9 +105,14 @@ namespace Forge.Security.Jwt.Client.Services
             }
             if (_refreshService != null && _lastHashcode != GetHashCode())
             {
-                IRefreshTokenService service = _refreshService;
+                IRefreshTokenService service = _refreshService
+#if NETSTANDARD2_0
+#else
+                    !
+#endif
+                    ;
                 _refreshService = null;
-                await service?.StopAsync(CancellationToken.None);
+                await service.StopAsync(CancellationToken.None);
             }
             if (_refreshService == null)
             {
@@ -228,7 +243,12 @@ namespace Forge.Security.Jwt.Client.Services
         {
             _logger.LogDebug("GetParsedTokenDataAsync, reading stored token");
 
-            ParsedTokenData result = null;
+            ParsedTokenData
+#if NETSTANDARD2_0
+#else
+                ?
+#endif
+                result = null;
             try
             {
                 result = await _storageService.GetAsync(PARSED_TOKEN_STORAGE_KEY);
@@ -254,7 +274,12 @@ namespace Forge.Security.Jwt.Client.Services
                 result.Claims.AddRange(JwtParserHelper.ParseClaimsFromJwt(result.AccessToken));
             }
             _logger.LogDebug("GetParsedTokenDataAsync, completed");
-            return result;
+            return result
+#if NETSTANDARD2_0
+#else
+                !
+#endif
+                ;
         }
 
         /// <summary>Parses the given authentication tokens.</summary>

@@ -191,7 +191,12 @@ namespace Forge.Security.Jwt.Client.Api
 #endif
                 result = default;
 
-            HttpClient httpClient = null;
+            HttpClient
+#if NETSTANDARD2_0
+#else
+                ?
+#endif
+                httpClient = null;
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(httpMethod, uri);
