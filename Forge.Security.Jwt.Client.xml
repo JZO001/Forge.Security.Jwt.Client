@@ -60,40 +60,45 @@
             <summary>Gets or sets the access token.</summary>
             <value>The JWT bearer access token, which used for the Api calls. It will be added to the header.</value>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.GetAsync``1(System.String)">
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.GetAsync``1(System.String,System.Threading.CancellationToken)">
             <summary>Gets data</summary>
             <typeparam name="TResult">The type of the result.</typeparam>
             <param name="uri">The URI.</param>
+            <param name="cancellationToken">The cancellation token.</param>
             <returns>The result object</returns>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.PostAsync``2(System.String,``0)">
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.PostAsync``2(System.String,``0,System.Threading.CancellationToken)">
             <summary>Posts data or creates a resource</summary>
             <typeparam name="TData">The type of the data.</typeparam>
             <typeparam name="TResult">The type of the result data.</typeparam>
             <param name="uri">The URI.</param>
             <param name="data">The data.</param>
+            <param name="cancellationToken">The cancellation token.</param>
             <returns>The result data</returns>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.PutAsync``2(System.String,``0)">
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.PutAsync``2(System.String,``0,System.Threading.CancellationToken)">
             <summary>Puts data or update a resource</summary>
             <typeparam name="TData">The type of the data.</typeparam>
             <typeparam name="TResult">The type of the result data.</typeparam>
             <param name="uri">The URI.</param>
             <param name="data">The data.</param>
+            <param name="cancellationToken">The cancellation token.</param>
             <returns>The result data</returns>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.DeleteAsync``1(System.String)">
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.DeleteAsync``1(System.String,System.Threading.CancellationToken)">
             <summary>Deletes a</summary>
             <typeparam name="TResult">The type of the result.</typeparam>
             <param name="uri">The URI.</param>
+            <param name="cancellationToken">The cancellation token.</param>
             <returns>The return data</returns>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.ApiCall``1(System.Net.Http.HttpMethod,System.String,System.Object)">
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.ApiCall``1(System.Net.Http.HttpMethod,System.String,System.Object,System.Threading.CancellationToken)">
             <summary>Perform the API call with the given parameters.</summary>
             <typeparam name="TResult">The type of the result.</typeparam>
             <param name="httpMethod">The HTTP method.</param>
             <param name="uri">The URI.</param>
             <param name="data">The data.</param>
+            <param name="cancellationToken">The cancellation token.</param>
             <returns>The return value</returns>
             <exception cref="T:Forge.Security.Jwt.Shared.Client.Api.HttpRequestException"></exception>
         </member>
@@ -175,6 +180,14 @@
             <param name="userCredentials">The user credentials.</param>
             <returns>Authentication result data</returns>
         </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.AuthenticateUserAsync``2(``0,System.Threading.CancellationToken)">
+            <summary>Authenticates the user with the given credentials</summary>
+            <typeparam name="TAuthCredentials">The type of the authentication credentials.</typeparam>
+            <typeparam name="TAuthResult">The type of the authentication result.</typeparam>
+            <param name="userCredentials">The user credentials.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>Authentication result data</returns>
+        </member>
         <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.GetCurrentUserInfoAsync">
             <summary>Gets the current user information.</summary>
             <returns>A data object which responded back by the provider/server/service</returns>
@@ -183,12 +196,27 @@
             <summary>Logs out the current user.</summary>
             <returns>True, if the logout was successful, otherwise, False</returns>
         </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.LogoutUserAsync(System.Threading.CancellationToken)">
+            <summary>Logs out the current user.</summary>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>True, if the logout was successful, otherwise, False</returns>
+        </member>
         <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.ValidateTokenAsync">
             <summary>Validates the current token.</summary>
             <returns>True, if the token is valid, otherwise, False.</returns>
         </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.ValidateTokenAsync(System.Threading.CancellationToken)">
+            <summary>Validates the current token.</summary>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns>True, if the token is valid, otherwise, False.</returns>
+        </member>
         <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.RefreshTokenAsync">
             <summary>Refreshes the current token and get a new one.</summary>
+            <returns>The new token, or null, if it is not valid.</returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.RefreshTokenAsync(System.Threading.CancellationToken)">
+            <summary>Refreshes the current token and get a new one.</summary>
+            <param name="cancellationToken">The cancellation token.</param>
             <returns>The new token, or null, if it is not valid.</returns>
         </member>
         <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.Dispose">

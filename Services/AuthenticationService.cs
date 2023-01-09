@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Forge.Security.Jwt.Client.Services
@@ -39,9 +40,9 @@ namespace Forge.Security.Jwt.Client.Services
         /// <exception cref="System.ArgumentNullException">apiService
         /// or
         /// authenticationStateProvider</exception>
-        public AuthenticationService(ILogger<AuthenticationService> logger, 
+        public AuthenticationService(ILogger<AuthenticationService> logger,
             ITokenizedApiCommunicationService apiService,
-            AuthenticationStateProvider authenticationStateProvider, 
+            AuthenticationStateProvider authenticationStateProvider,
             IAdditionalData additionalData,
             IOptions<JwtClientAuthenticationCoreOptions> options)
         {
@@ -75,7 +76,8 @@ namespace Forge.Security.Jwt.Client.Services
 #else
             ?
 #endif
-            AdditionalData { get; private set; }
+            AdditionalData
+        { get; private set; }
 
         /// <summary>Authenticates the user with the given credentials</summary>
         /// <typeparam name="TAuthCredentials">The type of the authentication credentials.</typeparam>
@@ -86,6 +88,19 @@ namespace Forge.Security.Jwt.Client.Services
             where TAuthCredentials : class, IAdditionalData
             where TAuthResult : class, IAuthenticationResponse, new()
         {
+            return await AuthenticateUserAsync<TAuthCredentials, TAuthResult>(userCredentials, CancellationToken.None);
+        }
+
+        /// <summary>Authenticates the user with the given credentials</summary>
+        /// <typeparam name="TAuthCredentials">The type of the authentication credentials.</typeparam>
+        /// <typeparam name="TAuthResult">The type of the authentication result.</typeparam>
+        /// <param name="userCredentials">The user credentials.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Authentication result data</returns>
+        public async Task<TAuthResult> AuthenticateUserAsync<TAuthCredentials, TAuthResult>(TAuthCredentials userCredentials, CancellationToken cancellationToken)
+        where TAuthCredentials : class, IAdditionalData
+        where TAuthResult : class, IAuthenticationResponse, new()
+        {
             TAuthResult result = new TAuthResult();
 
             _logger.LogDebug("AuthenticateUserAsync, authenticate user...");
@@ -93,7 +108,7 @@ namespace Forge.Security.Jwt.Client.Services
             try
             {
                 userCredentials.SecondaryKeys = AdditionalData?.SecondaryKeys?.ToList();
-                result = await _apiService.PostAsync<TAuthCredentials, TAuthResult>(_options.AuthenticationUri, userCredentials);
+                result = await _apiService.PostAsync<TAuthCredentials, TAuthResult>(_options.AuthenticationUri, userCredentials, cancellationToken);
                 await _authenticationStateProvider.AuthenticateUserAsync<TAuthResult>(result);
                 _logger.LogDebug("AuthenticateUserAsync, authentication was successfull");
             }
@@ -131,6 +146,14 @@ namespace Forge.Security.Jwt.Client.Services
         /// <returns>True, if the logout was successful, otherwise, False</returns>
         public async Task<bool> LogoutUserAsync()
         {
+            return await LogoutUserAsync(CancellationToken.None);
+        }
+
+        /// <summary>Logs out the current user.</summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>True, if the logout was successful, otherwise, False</returns>
+        public async Task<bool> LogoutUserAsync(CancellationToken cancellationToken)
+        {
             _logger.LogDebug("LogoutUserAsync, logging out...");
             ParsedTokenData parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync();
             BooleanResponse
@@ -144,11 +167,11 @@ namespace Forge.Security.Jwt.Client.Services
                 try
                 {
 #if NETSTANDARD2_0
-                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse>(_options.LogoutUri, AdditionalData);
+                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse>(_options.LogoutUri, AdditionalData, cancellationToken);
 #else
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-            response = await _apiService.PostAsync<IAdditionalData, BooleanResponse?>(_options.LogoutUri, AdditionalData);
+                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse?>(_options.LogoutUri, AdditionalData, cancellationToken);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8604 // Possible null reference argument.
 #endif
@@ -177,6 +200,14 @@ namespace Forge.Security.Jwt.Client.Services
         /// <returns>True, if the token is valid, otherwise, False.</returns>
         public async Task<bool> ValidateTokenAsync()
         {
+            return await ValidateTokenAsync(CancellationToken.None);
+        }
+
+        /// <summary>Validates the current token.</summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>True, if the token is valid, otherwise, False.</returns>
+        public async Task<bool> ValidateTokenAsync(CancellationToken cancellationToken)
+        {
             _logger.LogDebug("ValidateTokenAsync, validating token...");
 
             bool result = false;
@@ -191,7 +222,7 @@ namespace Forge.Security.Jwt.Client.Services
             TokenRequest request = new TokenRequest();
             request.RefreshTokenString = parsedTokenData.RefreshToken;
             request.SecondaryKeys = AdditionalData?.SecondaryKeys?.ToList();
-            BooleanResponse response = await _apiService.PostAsync<TokenRequest, BooleanResponse>(_options.ValidateTokenUri, request);
+            BooleanResponse response = await _apiService.PostAsync<TokenRequest, BooleanResponse>(_options.ValidateTokenUri, request, cancellationToken);
             if (response != null) result = response.Result;
 
             _logger.LogDebug($"ValidateTokenAsync, validation result: {result}");
@@ -208,6 +239,19 @@ namespace Forge.Security.Jwt.Client.Services
 #endif
             > RefreshTokenAsync()
         {
+            return await RefreshTokenAsync(CancellationToken.None);
+        }
+
+        /// <summary>Refreshes the current token and get a new one.</summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The new token, or null, if it is not valid.</returns>
+        public async Task<ParsedTokenData
+#if NETSTANDARD2_0
+#else
+        ?
+#endif
+        > RefreshTokenAsync(CancellationToken cancellationToken)
+        {
             _logger.LogDebug("RefreshTokenAsync, refreshing token...");
 #if NETSTANDARD2_0
             ParsedTokenData
@@ -215,7 +259,7 @@ namespace Forge.Security.Jwt.Client.Services
             ParsedTokenData?
 #endif
                 parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync();
-            
+
             if (parsedTokenData.RefreshTokenExpireAt < DateTime.UtcNow)
             {
                 _logger.LogDebug("RefreshTokenAsync, token expired");
@@ -229,7 +273,7 @@ namespace Forge.Security.Jwt.Client.Services
 
             try
             {
-                JwtTokenResult jwtTokenResult = await _apiService.PostAsync<TokenRequest, JwtTokenResult>(_options.RefreshUri, request);
+                JwtTokenResult jwtTokenResult = await _apiService.PostAsync<TokenRequest, JwtTokenResult>(_options.RefreshUri, request, cancellationToken);
                 await _authenticationStateProvider.AuthenticateUserAsync<JwtTokenResult>(jwtTokenResult);
                 parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync();
             }

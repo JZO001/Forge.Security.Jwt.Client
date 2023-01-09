@@ -6,6 +6,7 @@ using Forge.Security.Jwt.Shared.Client.Api;
 using Microsoft.Extensions.Logging;
 using Forge.Security.Jwt.Shared.Serialization;
 using Microsoft.Extensions.Options;
+using System.Threading;
 
 namespace Forge.Security.Jwt.Client.Api
 {
@@ -106,13 +107,14 @@ namespace Forge.Security.Jwt.Client.Api
         /// <summary>Gets data</summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
         /// <param name="uri">The URI.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The result object</returns>
-        public async Task<TResult> GetAsync<TResult>(string uri)
-#if NETSTANDARD
+        public async Task<TResult> GetAsync<TResult>(string uri, CancellationToken cancellationToken)
+#if NETSTANDARD || NETCOREAPP3_1
             where TResult : class
 #endif
         {
-            return await ApiCall<TResult>(HttpMethod.Get, uri, null);
+            return await ApiCall<TResult>(HttpMethod.Get, uri, null, cancellationToken);
         }
 
         /// <summary>Posts data or creates a resource</summary>
@@ -120,19 +122,20 @@ namespace Forge.Security.Jwt.Client.Api
         /// <typeparam name="TResult">The type of the result data.</typeparam>
         /// <param name="uri">The URI.</param>
         /// <param name="data">The data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The result data</returns>
         public async Task<TResult> PostAsync<TData, TResult>(string uri, TData
 #if NETSTANDARD2_0
 #else
             ?
 #endif
-            data)
-#if NETSTANDARD
+            data, CancellationToken cancellationToken)
+#if NETSTANDARD || NETCOREAPP3_1
             where TData : class
             where TResult : class
 #endif
         {
-            return await ApiCall<TResult>(HttpMethod.Post, uri, data);
+            return await ApiCall<TResult>(HttpMethod.Post, uri, data, cancellationToken);
         }
 
         /// <summary>Puts data or update a resource</summary>
@@ -140,31 +143,33 @@ namespace Forge.Security.Jwt.Client.Api
         /// <typeparam name="TResult">The type of the result data.</typeparam>
         /// <param name="uri">The URI.</param>
         /// <param name="data">The data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The result data</returns>
         public async Task<TResult> PutAsync<TData, TResult>(string uri, TData
 #if NETSTANDARD2_0
 #else
             ?
 #endif
-            data)
-#if NETSTANDARD
+            data, CancellationToken cancellationToken)
+#if NETSTANDARD || NETCOREAPP3_1
             where TData : class
             where TResult : class
 #endif
         {
-            return await ApiCall<TResult>(HttpMethod.Put, uri, data);
+            return await ApiCall<TResult>(HttpMethod.Put, uri, data, cancellationToken);
         }
 
         /// <summary>Deletes a</summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
         /// <param name="uri">The URI.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The return data</returns>
-        public async Task<TResult> DeleteAsync<TResult>(string uri)
-#if NETSTANDARD
+        public async Task<TResult> DeleteAsync<TResult>(string uri, CancellationToken cancellationToken)
+#if NETSTANDARD || NETCOREAPP3_1
             where TResult : class
 #endif
         {
-            return await ApiCall<TResult>(HttpMethod.Delete, uri, null);
+            return await ApiCall<TResult>(HttpMethod.Delete, uri, null, cancellationToken);
         }
 
         /// <summary>Perform the API call with the given parameters.</summary>
@@ -172,6 +177,7 @@ namespace Forge.Security.Jwt.Client.Api
         /// <param name="httpMethod">The HTTP method.</param>
         /// <param name="uri">The URI.</param>
         /// <param name="data">The data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The return value</returns>
         /// <exception cref="Shared.Client.Api.HttpRequestException"></exception>
         protected virtual async Task<TResult> ApiCall<TResult>(HttpMethod httpMethod, string uri, object
@@ -179,8 +185,8 @@ namespace Forge.Security.Jwt.Client.Api
 #else
             ?
 #endif
-            data)
-#if NETSTANDARD
+            data, CancellationToken cancellationToken)
+#if NETSTANDARD || NETCOREAPP3_1
             where TResult : class
 #endif
         {
@@ -228,7 +234,7 @@ namespace Forge.Security.Jwt.Client.Api
 
                 httpClient = _apiCommunicationHttpClientFactory.GetHttpClient();
                 _logger.LogDebug($"ApiCall, sending {httpMethod.Method} to {httpClient.BaseAddress}{uri}");
-                HttpResponseMessage response = await httpClient.SendAsync(request);
+                HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
                 _logger.LogDebug($"ApiCall, response arrived from {httpClient.BaseAddress}{uri}, method: {httpMethod.Method}");
 
                 string
