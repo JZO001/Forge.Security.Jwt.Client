@@ -9,8 +9,8 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;netcoreapp3.1;net6.0</TargetFrameworks>
-		<Version>1.0.2.2</Version>
-		<AssemblyVersion>1.0.2.2</AssemblyVersion>
+		<Version>1.0.2.3</Version>
+		<AssemblyVersion>1.0.2.3</AssemblyVersion>
 		<Copyright>Copyright © Zoltan Juhasz, 2022</Copyright>
 		<Description>Forge Security Jwt Client</Description>
 		<Product>Forge: reference, practice and patterns implementations and helper(s)</Product>
@@ -42,7 +42,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<PackageReference Include="Microsoft.JSInterop" Version="6.0.12" />
+		<PackageReference Include="Microsoft.JSInterop" Version="6.0.13" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">

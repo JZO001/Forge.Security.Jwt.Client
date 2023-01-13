@@ -116,16 +116,19 @@ namespace Forge.Security.Jwt.Client.Services
             }
             if (_refreshService == null)
             {
+                _logger.LogDebug("GetAuthenticationStateAsync, acquiring refresh service instance from DI");
                 lock (typeof(JwtTokenAuthenticationStateProvider))
                 {
                     if (_refreshService == null)
                     {
                         _lastHashcode = GetHashCode();
                         _refreshService = _serviceProvider.GetService(typeof(IRefreshTokenService)) as IRefreshTokenService;
+                        if (_refreshService == null) _logger.LogDebug("GetAuthenticationStateAsync, refresh service instance is NULL from DI");
                     }
                 }
                 if (_refreshService != null)
                 {
+                    _logger.LogDebug("GetAuthenticationStateAsync, trying to start refresh service instance from DI");
                     await _refreshService.StartAsync(CancellationToken.None);
                 }
             }

@@ -233,9 +233,9 @@ namespace Forge.Security.Jwt.Client.Api
                 }
 
                 httpClient = _apiCommunicationHttpClientFactory.GetHttpClient();
-                _logger.LogDebug($"ApiCall, sending {httpMethod.Method} to {httpClient.BaseAddress}{uri}");
+                _logger.LogDebug($"ApiCall, sending {httpMethod.Method} to baseAddress: {httpClient.BaseAddress}, uri: {uri}");
                 HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
-                _logger.LogDebug($"ApiCall, response arrived from {httpClient.BaseAddress}{uri}, method: {httpMethod.Method}");
+                _logger.LogDebug($"ApiCall, response arrived from baseAddress: {httpClient.BaseAddress}, uri: {uri}, method: {httpMethod.Method}");
 
                 string
 #if NETSTANDARD2_0
