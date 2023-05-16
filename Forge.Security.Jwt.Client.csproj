@@ -8,44 +8,58 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netcoreapp3.1;net6.0</TargetFrameworks>
-		<Version>1.0.2.3</Version>
-		<AssemblyVersion>1.0.2.3</AssemblyVersion>
-		<Copyright>Copyright © Zoltan Juhasz, 2022</Copyright>
-		<Description>Forge Security Jwt Client</Description>
-		<Product>Forge: reference, practice and patterns implementations and helper(s)</Product>
-		<Company>Forge Project Contributor(s)</Company>
-		<PackageId>Forge.Security.Jwt.Client</PackageId>
-		<Authors>Zoltan Juhasz</Authors>
-		<Title>Forge Security Jwt Client</Title>
+		<TargetFrameworks>netstandard2.0;netcoreapp3.1;net6.0;net7.0</TargetFrameworks>
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\.Documents\Forge.pfx</AssemblyOriginatorKeyFile>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<ProjectGuid>{4E2F389B-1E8F-47D7-B36A-6554B4C79BCF}</ProjectGuid>
+		<DocumentationFile>Forge.Security.Jwt.Client.xml</DocumentationFile>
+	</PropertyGroup>
+		
+	<PropertyGroup>
+		<Product>Forge: reference, practice and patterns implementations and helper(s)</Product>
+		<Company>Forge Project Contributor(s)</Company>
+		<Copyright>Copyright © Zoltan Juhasz, 2022-2023</Copyright>
+		<PackageId>Forge.Security.Jwt.Client</PackageId>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Title>Forge Security Jwt Client</Title>
+		<Description>Forge Security Jwt Client</Description>
+		<PackageProjectUrl>https://github.com/JZO001/Forge</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/JZO001/Forge</RepositoryUrl>
+		<Authors>Zoltan Juhasz</Authors>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryType>git</RepositoryType>
+		<AssemblyVersion>1.2.7.0</AssemblyVersion>
+		<Version>$(AssemblyVersion)</Version>
+		<FileVersion>$(AssemblyVersion)</FileVersion>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageTags>jwt, webassembly, wasm, jwt-token, sso, jwt-bearer-tokens, jwt-authentication, sso-authentication, sso-login, sso-client, jwt-decode, jwt-client, blazor, jwt-authorization</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
-	<PropertyGroup>
-		<DocumentationFile>Forge.Security.Jwt.Client.xml</DocumentationFile>
-		<RepositoryUrl>https://github.com/JZO001/Forge</RepositoryUrl>
-	</PropertyGroup>
-
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
 		<PackageReference Include="Microsoft.JSInterop" Version="3.1.32" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="3.1.32" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
 		<PackageReference Include="Microsoft.JSInterop" Version="3.1.32" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="3.1.32" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
 		<PackageReference Include="Microsoft.JSInterop" Version="6.0.13" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<PackageReference Include="Microsoft.JSInterop" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+	</ItemGroup>
+	
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0'">
 		<SupportedPlatform Include="browser" />
 	</ItemGroup>
 
@@ -53,6 +67,17 @@
 		<ProjectReference Include="..\Forge.Security.Jwt.Shared\Forge.Security.Jwt.Shared.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="echo F|xcopy /r /y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;$(SolutionDir).Output\$(TargetFramework)\$(TargetName).dll&quot;&#xD;&#xA;echo F|xcopy /r /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(SolutionDir).Output\$(TargetFramework)\$(TargetName).pdb&quot;&#xD;&#xA;echo F|xcopy /r /y &quot;$(TargetDir)$(TargetName).xml&quot; &quot;$(SolutionDir).Output\$(TargetFramework)\$(TargetName).xml&quot;&#xD;&#xA;" />
 	</Target>

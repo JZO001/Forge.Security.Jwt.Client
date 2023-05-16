@@ -7,19 +7,21 @@
         <member name="T:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory">
             <summary>Represents a HttpClient with a unique configuration</summary>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory},Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
+        <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.#ctor(Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions,System.IServiceProvider,Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory})">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory" /> class.</summary>
-            <param name="logger">The options.</param>
             <param name="options">The options.</param>
-            <exception cref="T:System.ArgumentNullException">options</exception>
-        </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory},Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions)">
-            <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory" /> class.</summary>
+            <param name="serviceProvider">The serviceProvider.</param>
             <param name="logger">The logger.</param>
-            <param name="options">The options.</param>
             <exception cref="T:System.ArgumentNullException">logger
             or
             options</exception>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.#ctor(Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions},System.IServiceProvider,Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory})">
+            <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory" /> class.</summary>
+            <param name="options">The options.</param>
+            <param name="serviceProvider">The serviceProvider.</param>
+            <param name="logger">The options.</param>
+            <exception cref="T:System.ArgumentNullException">options</exception>
         </member>
         <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.GetHttpClient">
             <summary>Gets the HTTP client.</summary>
@@ -121,6 +123,12 @@
             <summary>Gets or sets the type of the request media type.
             Default is "application/json".</summary>
             <value>The type of the request media.</value>
+        </member>
+        <member name="T:Forge.Security.Jwt.Client.Consts">
+            <summary>Constant(s)</summary>
+        </member>
+        <member name="F:Forge.Security.Jwt.Client.Consts.HTTP_CLIENT_FACTORY_NAME">
+            <summary>The HTTP client factory name</summary>
         </member>
         <member name="T:Forge.Security.Jwt.Client.ServiceCollectionExtensions">
             <summary>ServiceCollection extension methods</summary>
