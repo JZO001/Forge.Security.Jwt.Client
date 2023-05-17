@@ -35,7 +35,8 @@ namespace Forge.Security.Jwt.Client
 #endif
             configure)
         {
-            //.AddHostedService<JwtTokenRefreshHostedService>()
+            services.AddHttpClient(Consts.HTTP_CLIENT_FACTORY_NAME);
+
             return services
                 .AddSingleton<ISerializationProvider, SystemTextJsonSerializer>()
                 .AddSingleton<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
@@ -80,7 +81,8 @@ namespace Forge.Security.Jwt.Client
 #endif
             configure)
         {
-            //.AddHostedService<JwtTokenRefreshHostedService>()
+            services.AddHttpClient(Consts.HTTP_CLIENT_FACTORY_NAME);
+
             return services
                 .AddSingleton<ISerializationProvider, SystemTextJsonSerializer>()
                 .AddSingleton<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
