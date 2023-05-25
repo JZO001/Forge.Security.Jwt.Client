@@ -21,29 +21,21 @@ namespace Forge.Security.Jwt.Client
         /// Registers the Forge Jwt Client side security services as scoped.
         /// </summary>
         /// <returns>IServiceCollection</returns>
-        public static IServiceCollection AddForgeJwtClientAuthenticationCore(this IServiceCollection services)
-            => services.AddForgeJwtClientAuthenticationCore(null);
-
-        /// <summary>
-        /// Registers the Forge Jwt Client side security services as scoped.
-        /// </summary>
-        /// <returns>IServiceCollection</returns>
         public static IServiceCollection AddForgeJwtClientAuthenticationCore(this IServiceCollection services, Action<JwtClientAuthenticationCoreOptions>
 #if NETSTANDARD2_0
 #else
             ?
 #endif
-            configure)
+            configure = null)
         {
             services.AddHttpClient(Consts.HTTP_CLIENT_FACTORY_NAME);
 
             return services
+                .AddSingleton<DataStore>()
                 .AddSingleton<ISerializationProvider, SystemTextJsonSerializer>()
                 .AddSingleton<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
                 .AddSingleton<ITokenizedApiCommunicationService, TokenizedApiCommunicationService>()
-                .AddScoped<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
-                .AddScoped<AuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
-                .AddScoped<IAdditionalData, AdditionalData>(serviceProvider =>
+                .AddSingleton<IAdditionalData, AdditionalData>(serviceProvider =>
                 {
                     IOptions<JwtClientAuthenticationCoreOptions> options = serviceProvider.GetService<IOptions<JwtClientAuthenticationCoreOptions>>()
 #if NETSTANDARD2_0
@@ -55,6 +47,8 @@ namespace Forge.Security.Jwt.Client
                     logoutData.SecondaryKeys.AddRange(options.Value.SecondaryKeys);
                     return logoutData;
                 })
+                .AddScoped<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
+                .AddScoped<AuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
                 .AddScoped<IAuthenticationService, AuthenticationService>()
                 .AddScoped<IRefreshTokenService, JwtTokenRefreshHostedService>()
                 .Configure<JwtClientAuthenticationCoreOptions>(configureOptions =>
@@ -67,23 +61,18 @@ namespace Forge.Security.Jwt.Client
         /// Registers the Forge Jwt Client side security services as singletons.
         /// </summary>
         /// <returns>IServiceCollection</returns>
-        public static IServiceCollection AddForgeJwtClientAuthenticationCoreAsSingleton(this IServiceCollection services)
-            => services.AddForgeJwtClientAuthenticationCoreAsSingleton(null);
-
-        /// <summary>
-        /// Registers the Forge Jwt Client side security services as singletons.
-        /// </summary>
-        /// <returns>IServiceCollection</returns>
-        public static IServiceCollection AddForgeJwtClientAuthenticationCoreAsSingleton(this IServiceCollection services, Action<JwtClientAuthenticationCoreOptions>
+        public static IServiceCollection AddForgeJwtClientAuthenticationCoreAsSingleton(this IServiceCollection services, 
+            Action<JwtClientAuthenticationCoreOptions>
 #if NETSTANDARD2_0
 #else
             ?
 #endif
-            configure)
+            configure = null)
         {
             services.AddHttpClient(Consts.HTTP_CLIENT_FACTORY_NAME);
 
             return services
+                .AddSingleton<DataStore>()
                 .AddSingleton<ISerializationProvider, SystemTextJsonSerializer>()
                 .AddSingleton<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
                 .AddSingleton<ITokenizedApiCommunicationService, TokenizedApiCommunicationService>()

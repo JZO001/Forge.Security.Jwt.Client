@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Forge.Security.Jwt.Shared.Serialization;
 using Microsoft.Extensions.Options;
 using System.Threading;
+using Forge.Security.Jwt.Shared.Client.Models;
 
 namespace Forge.Security.Jwt.Client.Api
 {
@@ -18,6 +19,7 @@ namespace Forge.Security.Jwt.Client.Api
         private readonly ILogger<TokenizedApiCommunicationService> _logger;
         private readonly IApiCommunicationHttpClientFactory _apiCommunicationHttpClientFactory;
         private readonly ISerializationProvider _serializer;
+        private readonly DataStore _dataStore;
         private readonly TokenizedApiCommunicationServiceOptions _options;
 
         /// <summary>Occurs before the request sent out to prepare it manually</summary>
@@ -40,20 +42,25 @@ namespace Forge.Security.Jwt.Client.Api
         /// <param name="logger">The logger.</param>
         /// <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
         /// <param name="serializer">The serializer.</param>
+        /// <param name="dataStore">The dataStore.</param>
         /// <param name="options">The options.</param>
-        public TokenizedApiCommunicationService(ILogger<TokenizedApiCommunicationService> logger, 
+        public TokenizedApiCommunicationService(ILogger<TokenizedApiCommunicationService> logger,
             IApiCommunicationHttpClientFactory apiCommunicationHttpClientFactory,
             ISerializationProvider serializer,
-            IOptions<TokenizedApiCommunicationServiceOptions> options)
+            DataStore dataStore,
+            TokenizedApiCommunicationServiceOptions options)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (apiCommunicationHttpClientFactory == null) throw new ArgumentNullException(nameof(apiCommunicationHttpClientFactory));
             if (serializer == null) throw new ArgumentNullException(nameof(serializer));
+            if (dataStore == null) throw new ArgumentNullException(nameof(dataStore));
             if (options == null) throw new ArgumentNullException(nameof(options));
+
             _logger = logger;
             _apiCommunicationHttpClientFactory = apiCommunicationHttpClientFactory;
             _serializer = serializer;
-            _options = options.Value;
+            _dataStore = dataStore;
+            _options = options;
 
             _logger.LogDebug($"TokenizedApiCommunicationService.ctor, IApiCommunicationHttpClientFactory, hash: {apiCommunicationHttpClientFactory.GetHashCode()}");
             _logger.LogDebug($"TokenizedApiCommunicationService.ctor, ISerializationProvider, hash: {serializer.GetHashCode()}");
@@ -63,46 +70,20 @@ namespace Forge.Security.Jwt.Client.Api
         /// <param name="logger">The logger.</param>
         /// <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
         /// <param name="serializer">The serializer.</param>
+        /// <param name="dataStore">The dataStore.</param>
         /// <param name="options">The options.</param>
-        public TokenizedApiCommunicationService(ILogger<TokenizedApiCommunicationService> logger,
+        public TokenizedApiCommunicationService(ILogger<TokenizedApiCommunicationService> logger, 
             IApiCommunicationHttpClientFactory apiCommunicationHttpClientFactory,
             ISerializationProvider serializer,
-            TokenizedApiCommunicationServiceOptions options)
+            DataStore dataStore,
+            IOptions<TokenizedApiCommunicationServiceOptions> options)
+            : this(logger, apiCommunicationHttpClientFactory, serializer, dataStore, options?.Value)
         {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-            if (apiCommunicationHttpClientFactory == null) throw new ArgumentNullException(nameof(apiCommunicationHttpClientFactory));
-            if (serializer == null) throw new ArgumentNullException(nameof(serializer));
-            if (options == null) throw new ArgumentNullException(nameof(options));
-            _logger = logger;
-            _apiCommunicationHttpClientFactory = apiCommunicationHttpClientFactory;
-            _serializer = serializer;
-            _options = options;
-
-            _logger.LogDebug($"TokenizedApiCommunicationService.ctor, IApiCommunicationHttpClientFactory, hash: {apiCommunicationHttpClientFactory.GetHashCode()}");
-            _logger.LogDebug($"TokenizedApiCommunicationService.ctor, ISerializationProvider, hash: {serializer.GetHashCode()}");
         }
 
         /// <summary>Gets or sets the default encoding for sending.</summary>
         /// <value>The default encoding is UTF8.</value>
         public Encoding DefaultEncoding { get; set; } = Encoding.UTF8;
-
-        /// <summary>Gets or sets the user agent.</summary>
-        /// <value>The user agent.</value>
-        public string
-#if NETSTANDARD2_0
-#else
-            ?
-#endif
-            UserAgent { get; set; }
-
-        /// <summary>Gets or sets the access token.</summary>
-        /// <value>The JWT bearer access token, which used for the Api calls. It will be added to the header.</value>
-        public string
-#if NETSTANDARD2_0
-#else
-            ?
-#endif
-            AccessToken { get; set; }
 
         /// <summary>Gets data</summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -217,14 +198,14 @@ namespace Forge.Security.Jwt.Client.Api
                         request.Content = new StringContent(_serializer.Serialize(data), _options.RequestEncoding, _options.RequestMediaType);
                     }
 
-                    if (!string.IsNullOrEmpty(AccessToken))
+                    if (!string.IsNullOrEmpty(_dataStore.TokenData.AccessToken))
                     {
-                        request.Headers.Add("Authorization", $"Bearer {AccessToken}");
+                        request.Headers.Add("Authorization", $"Bearer {_dataStore.TokenData.AccessToken}");
                     }
 
-                    if (!string.IsNullOrEmpty(UserAgent))
+                    if (!string.IsNullOrEmpty(_dataStore.UserAgent))
                     {
-                        request.Headers.Add("user-agent", UserAgent);
+                        request.Headers.Add("user-agent", _dataStore.UserAgent);
                     }
                 }
                 else

@@ -36,31 +36,25 @@
         <member name="E:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.OnPrepareResponse">
             <summary>Occurs after the response arrived. Gain full control over the content deserialization.</summary>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService},Forge.Security.Jwt.Shared.Client.Api.IApiCommunicationHttpClientFactory,Forge.Security.Jwt.Shared.Serialization.ISerializationProvider,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationServiceOptions})">
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService},Forge.Security.Jwt.Shared.Client.Api.IApiCommunicationHttpClientFactory,Forge.Security.Jwt.Shared.Serialization.ISerializationProvider,Forge.Security.Jwt.Shared.Client.Models.DataStore,Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationServiceOptions)">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService" /> class.</summary>
             <param name="logger">The logger.</param>
             <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
             <param name="serializer">The serializer.</param>
+            <param name="dataStore">The dataStore.</param>
             <param name="options">The options.</param>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService},Forge.Security.Jwt.Shared.Client.Api.IApiCommunicationHttpClientFactory,Forge.Security.Jwt.Shared.Serialization.ISerializationProvider,Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationServiceOptions)">
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService},Forge.Security.Jwt.Shared.Client.Api.IApiCommunicationHttpClientFactory,Forge.Security.Jwt.Shared.Serialization.ISerializationProvider,Forge.Security.Jwt.Shared.Client.Models.DataStore,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationServiceOptions})">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService" /> class.</summary>
             <param name="logger">The logger.</param>
             <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
             <param name="serializer">The serializer.</param>
+            <param name="dataStore">The dataStore.</param>
             <param name="options">The options.</param>
         </member>
         <member name="P:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.DefaultEncoding">
             <summary>Gets or sets the default encoding for sending.</summary>
             <value>The default encoding is UTF8.</value>
-        </member>
-        <member name="P:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.UserAgent">
-            <summary>Gets or sets the user agent.</summary>
-            <value>The user agent.</value>
-        </member>
-        <member name="P:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.AccessToken">
-            <summary>Gets or sets the access token.</summary>
-            <value>The JWT bearer access token, which used for the Api calls. It will be added to the header.</value>
         </member>
         <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.GetAsync``1(System.String,System.Threading.CancellationToken)">
             <summary>Gets data</summary>
@@ -133,21 +127,9 @@
         <member name="T:Forge.Security.Jwt.Client.ServiceCollectionExtensions">
             <summary>ServiceCollection extension methods</summary>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.ServiceCollectionExtensions.AddForgeJwtClientAuthenticationCore(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            Registers the Forge Jwt Client side security services as scoped.
-            </summary>
-            <returns>IServiceCollection</returns>
-        </member>
         <member name="M:Forge.Security.Jwt.Client.ServiceCollectionExtensions.AddForgeJwtClientAuthenticationCore(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
             <summary>
             Registers the Forge Jwt Client side security services as scoped.
-            </summary>
-            <returns>IServiceCollection</returns>
-        </member>
-        <member name="M:Forge.Security.Jwt.Client.ServiceCollectionExtensions.AddForgeJwtClientAuthenticationCoreAsSingleton(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            Registers the Forge Jwt Client side security services as singletons.
             </summary>
             <returns>IServiceCollection</returns>
         </member>
@@ -163,12 +145,13 @@
         <member name="E:Forge.Security.Jwt.Client.Services.AuthenticationService.OnUserAuthenticationStateChanged">
             <summary>Occurs when a user authentication state changed</summary>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.AuthenticationService},Forge.Security.Jwt.Shared.Client.Api.ITokenizedApiCommunicationService,Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider,Forge.Security.Jwt.Shared.Client.Services.IAdditionalData,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
+        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.AuthenticationService},Forge.Security.Jwt.Shared.Client.Api.ITokenizedApiCommunicationService,Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider,Forge.Security.Jwt.Shared.Client.Services.IAdditionalData,Forge.Security.Jwt.Shared.Client.Models.DataStore,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Services.AuthenticationService" /> class.</summary>
             <param name="logger">The logger.</param>
             <param name="apiService">The API service.</param>
             <param name="authenticationStateProvider">The authentication state provider.</param>
             <param name="additionalData">Optionally the logout data</param>
+            <param name="dataStore">The dataStore.</param>
             <param name="options">Optionally the logout data</param>
             <exception cref="T:System.ArgumentNullException">apiService
             or
@@ -176,10 +159,6 @@
         </member>
         <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.Finalize">
             <summary>Finalizes an instance of the <see cref="T:Forge.Security.Jwt.Client.Services.AuthenticationService" /> class.</summary>
-        </member>
-        <member name="P:Forge.Security.Jwt.Client.Services.AuthenticationService.AdditionalData">
-            <summary>Gets or sets the additional data, if something need to send at requests</summary>
-            <value>The logout data.</value>
         </member>
         <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.AuthenticateUserAsync``2(``0)">
             <summary>Authenticates the user with the given credentials</summary>
@@ -248,11 +227,12 @@
             This is a static event.
             </summary>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider},Forge.Security.Jwt.Shared.Storage.IStorage{Forge.Security.Jwt.Shared.Client.Models.ParsedTokenData},Forge.Security.Jwt.Shared.Client.Api.ITokenizedApiCommunicationService,System.IServiceProvider)">
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider},Forge.Security.Jwt.Shared.Storage.IStorage{Forge.Security.Jwt.Shared.Client.Models.ParsedTokenData},Forge.Security.Jwt.Shared.Client.Api.ITokenizedApiCommunicationService,Forge.Security.Jwt.Shared.Client.Models.DataStore,System.IServiceProvider)">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider" /> class.</summary>
             <param name="logger">The logger.</param>
             <param name="storage">The storage service.</param>
             <param name="apiService">The communication service.</param>
+            <param name="dataStore">The dataStore.</param>
             <param name="serviceProvider">The service provider</param>
         </member>
         <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.GetAuthenticationStateAsync">
@@ -309,11 +289,12 @@
         <member name="T:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService">
             <summary>Automatically refresh the token before it expires</summary>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService},Forge.Security.Jwt.Shared.Client.Services.IAuthenticationService,Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService},Forge.Security.Jwt.Shared.Client.Services.IAuthenticationService,Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider,Forge.Security.Jwt.Shared.Client.Models.DataStore,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService" /> class.</summary>
             <param name="logger">The logger.</param>
             <param name="authenticationService">The authentication service.</param>
             <param name="authenticationStateProvider">The JWT token authentication state provider.</param>
+            <param name="dataStore">The dataStore.</param>
             <param name="options">The options.</param>
             <exception cref="T:System.ArgumentNullException">authenticationService
             or

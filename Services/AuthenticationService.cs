@@ -21,6 +21,8 @@ namespace Forge.Security.Jwt.Client.Services
         private readonly ILogger<AuthenticationService> _logger;
         private readonly ITokenizedApiCommunicationService _apiService;
         private readonly IJwtTokenAuthenticationStateProvider _authenticationStateProvider;
+        private readonly IAdditionalData _additionalData;
+        private readonly DataStore _dataStore;
         private readonly JwtClientAuthenticationCoreOptions _options;
 
         /// <summary>Occurs when a user authentication state changed</summary>
@@ -36,6 +38,7 @@ namespace Forge.Security.Jwt.Client.Services
         /// <param name="apiService">The API service.</param>
         /// <param name="authenticationStateProvider">The authentication state provider.</param>
         /// <param name="additionalData">Optionally the logout data</param>
+        /// <param name="dataStore">The dataStore.</param>
         /// <param name="options">Optionally the logout data</param>
         /// <exception cref="System.ArgumentNullException">apiService
         /// or
@@ -44,18 +47,22 @@ namespace Forge.Security.Jwt.Client.Services
             ITokenizedApiCommunicationService apiService,
             AuthenticationStateProvider authenticationStateProvider,
             IAdditionalData additionalData,
+            DataStore dataStore,
             IOptions<JwtClientAuthenticationCoreOptions> options)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (apiService == null) throw new ArgumentNullException(nameof(apiService));
             if (authenticationStateProvider == null) throw new ArgumentNullException(nameof(authenticationStateProvider));
+            if (additionalData == null) throw new ArgumentNullException(nameof(additionalData));
+            if (dataStore == null) throw new ArgumentNullException(nameof(dataStore));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             _logger = logger;
             _apiService = apiService;
             _authenticationStateProvider = (IJwtTokenAuthenticationStateProvider)authenticationStateProvider;
             _authenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedEventHandler;
-            AdditionalData = additionalData;
+            _additionalData = additionalData;
+            _dataStore = dataStore;
             _options = options.Value;
 
             _logger.LogDebug($"AuthenticationService.ctor, ITokenizedApiCommunicationService, hash: {apiService.GetHashCode()}");
@@ -68,16 +75,6 @@ namespace Forge.Security.Jwt.Client.Services
         {
             Dispose(false);
         }
-
-        /// <summary>Gets or sets the additional data, if something need to send at requests</summary>
-        /// <value>The logout data.</value>
-        public IAdditionalData
-#if NETSTANDARD2_0
-#else
-            ?
-#endif
-            AdditionalData
-        { get; private set; }
 
         /// <summary>Authenticates the user with the given credentials</summary>
         /// <typeparam name="TAuthCredentials">The type of the authentication credentials.</typeparam>
@@ -107,15 +104,17 @@ namespace Forge.Security.Jwt.Client.Services
 
             try
             {
-                userCredentials.SecondaryKeys = AdditionalData?.SecondaryKeys?.ToList();
+                userCredentials.SecondaryKeys = _additionalData.SecondaryKeys?.ToList();
                 result = await _apiService.PostAsync<TAuthCredentials, TAuthResult>(_options.AuthenticationUri, userCredentials, cancellationToken);
                 await _authenticationStateProvider.AuthenticateUserAsync<TAuthResult>(result);
+                
                 _logger.LogDebug("AuthenticateUserAsync, authentication was successfull");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
                 _logger.LogDebug("AuthenticateUserAsync, authentication failed");
+                
                 await LogoutUserAsync();
                 result = new TAuthResult();
             }
@@ -132,7 +131,7 @@ namespace Forge.Security.Jwt.Client.Services
 #endif
             > GetCurrentUserInfoAsync()
         {
-            ParsedTokenData result = await _authenticationStateProvider.GetParsedTokenDataAsync();
+            ParsedTokenData result = await GetParsedTokenDataAsync();
 
             if (result == null)
             {
@@ -155,7 +154,9 @@ namespace Forge.Security.Jwt.Client.Services
         public async Task<bool> LogoutUserAsync(CancellationToken cancellationToken)
         {
             _logger.LogDebug("LogoutUserAsync, logging out...");
-            ParsedTokenData parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync();
+            
+            ParsedTokenData parsedTokenData = await GetParsedTokenDataAsync();
+
             BooleanResponse
 #if NETSTANDARD2_0
 #else
@@ -167,11 +168,11 @@ namespace Forge.Security.Jwt.Client.Services
                 try
                 {
 #if NETSTANDARD2_0
-                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse>(_options.LogoutUri, AdditionalData, cancellationToken);
+                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse>(_options.LogoutUri, _additionalData, cancellationToken);
 #else
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse?>(_options.LogoutUri, AdditionalData, cancellationToken);
+                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse?>(_options.LogoutUri, _additionalData, cancellationToken);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8604 // Possible null reference argument.
 #endif
@@ -189,8 +190,11 @@ namespace Forge.Security.Jwt.Client.Services
             {
                 _logger.LogError(ex, ex.Message);
             }
+
             bool result = response == null ? false : response.Result;
+
             _logger.LogDebug($"LogoutUserAsync, logout completed. Result: {result}");
+
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
             return result;
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
@@ -212,7 +216,7 @@ namespace Forge.Security.Jwt.Client.Services
 
             bool result = false;
 
-            ParsedTokenData parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync();
+            ParsedTokenData parsedTokenData = await GetParsedTokenDataAsync();
             if (parsedTokenData.RefreshTokenExpireAt < DateTime.UtcNow)
             {
                 _logger.LogDebug("ValidateTokenAsync, token expired");
@@ -221,7 +225,8 @@ namespace Forge.Security.Jwt.Client.Services
 
             TokenRequest request = new TokenRequest();
             request.RefreshTokenString = parsedTokenData.RefreshToken;
-            request.SecondaryKeys = AdditionalData?.SecondaryKeys?.ToList();
+            request.SecondaryKeys = _additionalData.SecondaryKeys?.ToList();
+
             BooleanResponse response = await _apiService.PostAsync<TokenRequest, BooleanResponse>(_options.ValidateTokenUri, request, cancellationToken);
             if (response != null) result = response.Result;
 
@@ -258,7 +263,7 @@ namespace Forge.Security.Jwt.Client.Services
 #else
             ParsedTokenData?
 #endif
-                parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync();
+                parsedTokenData = await GetParsedTokenDataAsync();
 
             if (parsedTokenData.RefreshTokenExpireAt < DateTime.UtcNow)
             {
@@ -268,14 +273,14 @@ namespace Forge.Security.Jwt.Client.Services
 
             TokenRequest request = new TokenRequest();
             request.RefreshTokenString = parsedTokenData.RefreshToken;
-            request.SecondaryKeys = AdditionalData?.SecondaryKeys?.ToList();
+            request.SecondaryKeys = _additionalData.SecondaryKeys?.ToList();
             parsedTokenData = null;
 
             try
             {
                 JwtTokenResult jwtTokenResult = await _apiService.PostAsync<TokenRequest, JwtTokenResult>(_options.RefreshUri, request, cancellationToken);
                 await _authenticationStateProvider.AuthenticateUserAsync<JwtTokenResult>(jwtTokenResult);
-                parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync();
+                _dataStore.TokenData = parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync();
             }
             catch (Exception ex)
             {
@@ -307,26 +312,38 @@ namespace Forge.Security.Jwt.Client.Services
         private void AuthenticationStateChangedEventHandler(Task<AuthenticationState> task)
         {
             _logger.LogDebug("AuthenticationStateChangedEventHandler, authentication state changed");
+
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
             if (task.Result.User.Identity.IsAuthenticated)
             {
                 ClaimsIdentity claimsIdentity = (ClaimsIdentity)task.Result.User.Identity;
                 string userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+
                 _logger.LogDebug($"AuthenticationStateChangedEventHandler, authenticated userId: {userId}");
+                
                 OnUserAuthenticationStateChanged?.Invoke(this, new UserDataEventArgs(userId));
             }
             else
             {
                 _logger.LogDebug("AuthenticationStateChangedEventHandler, no authenticated user");
+                
                 OnUserAuthenticationStateChanged?.Invoke(this, new UserDataEventArgs(string.Empty));
             }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
+        }
+
+        private async Task<ParsedTokenData> GetParsedTokenDataAsync()
+        {
+            ParsedTokenData result = _dataStore.TokenData;
+            if (string.IsNullOrWhiteSpace(result.AccessToken)) result = await _authenticationStateProvider.GetParsedTokenDataAsync();
+            return result;
         }
 
         /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>Releases unmanaged and - optionally - managed resources.</summary>
