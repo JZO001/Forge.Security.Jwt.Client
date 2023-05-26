@@ -33,7 +33,6 @@ namespace Forge.Security.Jwt.Client.Services
 
         private readonly ILogger<JwtTokenAuthenticationStateProvider> _logger;
         private readonly IStorage<ParsedTokenData> _storageService;
-        private readonly ITokenizedApiCommunicationService _apiService;
         private readonly DataStore _dataStore;
         private readonly IServiceProvider _serviceProvider;
 
@@ -57,29 +56,24 @@ namespace Forge.Security.Jwt.Client.Services
         /// <summary>Initializes a new instance of the <see cref="JwtTokenAuthenticationStateProvider" /> class.</summary>
         /// <param name="logger">The logger.</param>
         /// <param name="storage">The storage service.</param>
-        /// <param name="apiService">The communication service.</param>
         /// <param name="dataStore">The dataStore.</param>
         /// <param name="serviceProvider">The service provider</param>
         public JwtTokenAuthenticationStateProvider(ILogger<JwtTokenAuthenticationStateProvider> logger, 
             IStorage<ParsedTokenData> storage, 
-            ITokenizedApiCommunicationService apiService,
             DataStore dataStore,
             IServiceProvider serviceProvider)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (apiService == null) throw new ArgumentNullException(nameof(apiService));
             if (dataStore == null) throw new ArgumentNullException(nameof(dataStore));
             if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
 
             _logger = logger;
             _storageService = storage;
-            _apiService = apiService;
             _dataStore = dataStore;
             _serviceProvider = serviceProvider;
 
             _logger.LogDebug($"JwtTokenAuthenticationStateProvider.ctor, IStorage<ParsedTokenData>, hash: {storage.GetHashCode()}");
-            _logger.LogDebug($"JwtTokenAuthenticationStateProvider.ctor, ITokenizedApiCommunicationService, hash: {apiService.GetHashCode()}");
         }
 
         /// <summary>Asynchronously gets an <see cref="T:Microsoft.AspNetCore.Components.Authorization.AuthenticationState">AuthenticationState</see> that describes the current user.</summary>
@@ -155,7 +149,7 @@ namespace Forge.Security.Jwt.Client.Services
                 try
                 {
                     _logger.LogDebug("GetAuthenticationStateAsync, authenticating user");
-                    await AuthenticateUserAsync(parsedTokenData);
+                    await AuthenticateUserInnerAsync(parsedTokenData);
                     _logger.LogDebug("GetAuthenticationStateAsync, user authenticated");
                 }
                 catch (Exception ex)

@@ -108,7 +108,7 @@ namespace Forge.Security.Jwt.Client.Services
                 result = await _apiService.PostAsync<TAuthCredentials, TAuthResult>(_options.AuthenticationUri, userCredentials, cancellationToken);
                 await _authenticationStateProvider.AuthenticateUserAsync<TAuthResult>(result);
                 
-                _logger.LogDebug("AuthenticateUserAsync, authentication was successfull");
+                _logger.LogDebug("AuthenticateUserAsync, authentication was successful");
             }
             catch (Exception ex)
             {
