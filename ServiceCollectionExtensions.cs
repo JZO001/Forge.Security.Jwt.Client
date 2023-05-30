@@ -48,6 +48,8 @@ namespace Forge.Security.Jwt.Client
                     return logoutData;
                 })
                 .AddScoped<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
+                .AddScoped<JwtTokenAuthenticationStateProvider>()
+                .AddScoped<IJwtTokenAuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
                 .AddScoped<AuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
                 .AddScoped<IAuthenticationService, AuthenticationService>()
                 .AddScoped<IRefreshTokenService, JwtTokenRefreshHostedService>()
@@ -77,6 +79,8 @@ namespace Forge.Security.Jwt.Client
                 .AddSingleton<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
                 .AddSingleton<ITokenizedApiCommunicationService, TokenizedApiCommunicationService>()
                 .AddSingleton<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
+                .AddSingleton<JwtTokenAuthenticationStateProvider>()
+                .AddSingleton<IJwtTokenAuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
                 .AddSingleton<AuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
                 .AddSingleton<IAdditionalData, AdditionalData>(serviceProvider =>
                 {

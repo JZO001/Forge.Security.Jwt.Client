@@ -227,11 +227,10 @@
             This is a static event.
             </summary>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider},Forge.Security.Jwt.Shared.Storage.IStorage{Forge.Security.Jwt.Shared.Client.Models.ParsedTokenData},Forge.Security.Jwt.Shared.Client.Api.ITokenizedApiCommunicationService,Forge.Security.Jwt.Shared.Client.Models.DataStore,System.IServiceProvider)">
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider},Forge.Security.Jwt.Shared.Storage.IStorage{Forge.Security.Jwt.Shared.Client.Models.ParsedTokenData},Forge.Security.Jwt.Shared.Client.Models.DataStore,System.IServiceProvider)">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Services.JwtTokenAuthenticationStateProvider" /> class.</summary>
             <param name="logger">The logger.</param>
             <param name="storage">The storage service.</param>
-            <param name="apiService">The communication service.</param>
             <param name="dataStore">The dataStore.</param>
             <param name="serviceProvider">The service provider</param>
         </member>
