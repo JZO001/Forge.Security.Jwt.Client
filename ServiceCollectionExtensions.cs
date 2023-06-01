@@ -49,8 +49,8 @@ namespace Forge.Security.Jwt.Client
                 })
                 .AddScoped<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
                 .AddScoped<JwtTokenAuthenticationStateProvider>()
-                .AddScoped<IJwtTokenAuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
-                .AddScoped<AuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
+                .AddScoped<IJwtTokenAuthenticationStateProvider>(sp => sp.GetRequiredService<JwtTokenAuthenticationStateProvider>())
+                .AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtTokenAuthenticationStateProvider>())
                 .AddScoped<IAuthenticationService, AuthenticationService>()
                 .AddScoped<IRefreshTokenService, JwtTokenRefreshHostedService>()
                 .Configure<JwtClientAuthenticationCoreOptions>(configureOptions =>
@@ -80,8 +80,8 @@ namespace Forge.Security.Jwt.Client
                 .AddSingleton<ITokenizedApiCommunicationService, TokenizedApiCommunicationService>()
                 .AddSingleton<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
                 .AddSingleton<JwtTokenAuthenticationStateProvider>()
-                .AddSingleton<IJwtTokenAuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
-                .AddSingleton<AuthenticationStateProvider, JwtTokenAuthenticationStateProvider>()
+                .AddSingleton<IJwtTokenAuthenticationStateProvider>(sp => sp.GetRequiredService<JwtTokenAuthenticationStateProvider>())
+                .AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtTokenAuthenticationStateProvider>())
                 .AddSingleton<IAdditionalData, AdditionalData>(serviceProvider =>
                 {
                     IOptions<JwtClientAuthenticationCoreOptions> options = serviceProvider.GetService<IOptions<JwtClientAuthenticationCoreOptions>>()
