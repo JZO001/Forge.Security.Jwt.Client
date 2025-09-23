@@ -288,6 +288,9 @@
         <member name="T:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService">
             <summary>Automatically refresh the token before it expires</summary>
         </member>
+        <member name="E:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.OnAuthenticationError">
+            <summary>Occurs when authentication required</summary>
+        </member>
         <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService},Forge.Security.Jwt.Shared.Client.Services.IAuthenticationService,Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider,Forge.Security.Jwt.Shared.Client.Models.DataStore,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService" /> class.</summary>
             <param name="logger">The logger.</param>
@@ -312,6 +315,9 @@
             <returns>
               Task
             </returns>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.RaiseOnAuthenticationError">
+            <summary>Raises the authentication error event.</summary>
         </member>
     </members>
 </doc>

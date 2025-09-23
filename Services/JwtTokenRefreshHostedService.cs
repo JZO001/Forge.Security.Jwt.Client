@@ -32,6 +32,14 @@ namespace Forge.Security.Jwt.Client.Services
 #endif
             _parsedTokenData;
 
+#if NETSTANDARD2_0
+        /// <summary>Occurs when authentication required</summary>
+        public event EventHandler OnAuthenticationError;
+#else
+        /// <summary>Occurs when authentication required</summary>
+        public event EventHandler? OnAuthenticationError;
+#endif
+
         /// <summary>Initializes a new instance of the <see cref="JwtTokenRefreshHostedService" /> class.</summary>
         /// <param name="logger">The logger.</param>
         /// <param name="authenticationService">The authentication service.</param>
@@ -59,8 +67,8 @@ namespace Forge.Security.Jwt.Client.Services
             _dataStore = dataStore;
             _options = options.Value;
             
-            _logger.LogDebug($"JwtTokenRefreshHostedService.ctor, IAuthenticationService, hash: {authenticationService.GetHashCode()}");
-            _logger.LogDebug($"JwtTokenRefreshHostedService.ctor, AuthenticationStateProvider, hash: {authenticationStateProvider.GetHashCode()}");
+            _logger.LogDebug("JwtTokenRefreshHostedService.ctor, IAuthenticationService, hash: {Hash}", authenticationService.GetHashCode());
+            _logger.LogDebug("JwtTokenRefreshHostedService.ctor, AuthenticationStateProvider, hash: {Hash}", authenticationStateProvider.GetHashCode());
         }
 
         /// <summary>Starts the service</summary>
@@ -101,6 +109,12 @@ namespace Forge.Security.Jwt.Client.Services
             return Task.CompletedTask;
         }
 
+        /// <summary>Raises the authentication error event.</summary>
+        protected virtual void RaiseOnAuthenticationError()
+        {
+            OnAuthenticationError?.Invoke(this, EventArgs.Empty);
+        }
+
         private async void AuthenticationStateChangedEventHandler(Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState> task)
         {
             _logger.LogInformation("AuthenticationStateChangedEventHandler, authentication state changed");
@@ -112,19 +126,20 @@ namespace Forge.Security.Jwt.Client.Services
         {
             _parsedTokenData = await GetParsedTokenDataAsync();
 
-            _logger.LogDebug($"ConfigureTimerAsync, current time: {DateTime.UtcNow.ToString("yyyy.MM.dd HH:mm:ss:ttt")}, refresh token will expire: {_parsedTokenData.RefreshTokenExpireAt.ToString("yyyy.MM.dd HH:mm:ss:ttt")}");
+            _logger.LogDebug("ConfigureTimerAsync, current time: {CurrentTime}, refresh token will expire: {RefreshTokenExpireAt}", DateTime.UtcNow.ToString("yyyy.MM.dd HH:mm:ss:ttt"), _parsedTokenData.RefreshTokenExpireAt.ToString("yyyy.MM.dd HH:mm:ss:ttt"));
             if (_parsedTokenData.RefreshTokenExpireAt < DateTime.UtcNow)
             {
                 // token has already expired
                 _logger.LogInformation("ConfigureTimerAsync, refresh token expired. It is not possible to regenerate the current access token, if it exists.");
                 _timer?.Change(Timeout.Infinite, 0);
+                RaiseOnAuthenticationError();
             }
             else
             {
                 // start timer
                 int dueTime = Convert.ToInt32(TimeSpan.FromTicks(_parsedTokenData.RefreshTokenExpireAt.Ticks - DateTime.UtcNow.Ticks).TotalMilliseconds) - _options.RefreshTokenBeforeExpirationInMilliseconds;
                 if (dueTime < 0) dueTime = 0;
-                _logger.LogInformation($"ConfigureTimerAsync, timer due time value: {dueTime} ms");
+                _logger.LogInformation("ConfigureTimerAsync, timer due time value: {DueTime} ms", dueTime);
                 _timer?.Change(dueTime, Timeout.Infinite);
             }
         }
@@ -159,8 +174,10 @@ namespace Forge.Security.Jwt.Client.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "DoWorkAsync, failed to refresh token");
-                
+
                 _timer?.Change(Timeout.Infinite, 0);
+
+                RaiseOnAuthenticationError();
 
                 await Task.Delay(1000);
 

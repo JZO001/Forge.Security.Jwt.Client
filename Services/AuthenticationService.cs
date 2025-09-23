@@ -1,4 +1,5 @@
-﻿using Forge.Security.Jwt.Shared.Client.Api;
+﻿using Forge.Security.Jwt.Shared;
+using Forge.Security.Jwt.Shared.Client.Api;
 using Forge.Security.Jwt.Shared.Client.Models;
 using Forge.Security.Jwt.Shared.Client.Services;
 using Forge.Security.Jwt.Shared.Service.Models;
@@ -95,10 +96,10 @@ namespace Forge.Security.Jwt.Client.Services
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Authentication result data</returns>
         public async Task<TAuthResult> AuthenticateUserAsync<TAuthCredentials, TAuthResult>(TAuthCredentials userCredentials, CancellationToken cancellationToken)
-        where TAuthCredentials : class, IAdditionalData
-        where TAuthResult : class, IAuthenticationResponse, new()
+            where TAuthCredentials : class, IAdditionalData
+            where TAuthResult : class, IAuthenticationResponse, new()
         {
-            TAuthResult result = new TAuthResult();
+            TAuthResult result = default;
 
             _logger.LogDebug("AuthenticateUserAsync, authenticate user...");
 
@@ -268,7 +269,7 @@ namespace Forge.Security.Jwt.Client.Services
             if (parsedTokenData.RefreshTokenExpireAt < DateTime.UtcNow)
             {
                 _logger.LogDebug("RefreshTokenAsync, token expired");
-                return null;
+                throw new TokenExpiredException();
             }
 
             TokenRequest request = new TokenRequest();
@@ -286,12 +287,13 @@ namespace Forge.Security.Jwt.Client.Services
             {
                 _logger.LogDebug("RefreshTokenAsync, token refresh failed");
                 _logger.LogError(ex, ex.Message);
-                if (ex.InnerException != null && ex.InnerException is Shared.Client.Api.HttpRequestException)
+
+                if (ex.InnerException is Shared.Client.Api.HttpRequestException hre)
                 {
-                    Shared.Client.Api.HttpRequestException hre = (Shared.Client.Api.HttpRequestException)ex.InnerException;
                     if (hre.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
                         await LogoutUserAsync();
+                        throw new AuthenticationException();
                     }
                     else
                     {
