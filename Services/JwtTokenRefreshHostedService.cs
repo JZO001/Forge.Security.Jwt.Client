@@ -1,11 +1,14 @@
-﻿using Forge.Security.Jwt.Shared.Client.Models;
+﻿using Forge.Security.Jwt.Shared;
+using Forge.Security.Jwt.Shared.Client.Models;
 using Forge.Security.Jwt.Shared.Client.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
+using AuthenticationException = Forge.Security.Jwt.Shared.AuthenticationException;
 
 namespace Forge.Security.Jwt.Client.Services
 {
@@ -38,6 +41,22 @@ namespace Forge.Security.Jwt.Client.Services
 #else
         /// <summary>Occurs when authentication required</summary>
         public event EventHandler? OnAuthenticationError;
+#endif
+
+#if NETSTANDARD2_0
+        /// <summary>Occurs when authentication token expired</summary>
+        public event EventHandler OnTokenExpired;
+#else
+        /// <summary>Occurs when authentication token expired</summary>
+        public event EventHandler? OnTokenExpired;
+#endif
+
+#if NETSTANDARD2_0
+        /// <summary>Occurs when refresh token error occured</summary>
+        public event EventHandler<Exception> OnTokenRefreshError;
+#else
+        /// <summary>Occurs when refresh token error occured</summary>
+        public event EventHandler<Exception>? OnTokenRefreshError;
 #endif
 
         /// <summary>Initializes a new instance of the <see cref="JwtTokenRefreshHostedService" /> class.</summary>
@@ -115,6 +134,19 @@ namespace Forge.Security.Jwt.Client.Services
             OnAuthenticationError?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>Raises the on token expired.</summary>
+        protected virtual void RaiseOnTokenExpired()
+        {
+            OnTokenExpired?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>Raises the on token refresh error.</summary>
+        /// <param name="ex">The ex.</param>
+        protected virtual void RaiseOnTokenRefreshError(Exception ex)
+        {
+            OnTokenRefreshError?.Invoke(this, ex);
+        }
+
         private async void AuthenticationStateChangedEventHandler(Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState> task)
         {
             _logger.LogInformation("AuthenticationStateChangedEventHandler, authentication state changed");
@@ -171,16 +203,28 @@ namespace Forge.Security.Jwt.Client.Services
                 await _authenticationService.RefreshTokenAsync();
                 _logger.LogInformation("DoWorkAsync, token successfully refreshed");
             }
+            catch (AuthenticationException authEx)
+            {
+                _logger.LogError(authEx, "DoWorkAsync, failed to refresh token because of authentication error");
+                _timer?.Change(Timeout.Infinite, 0);
+                RaiseOnAuthenticationError();
+                await Task.Delay(1000);
+                await ConfigureTimerAsync();
+            }
+            catch (TokenExpiredException tex)
+            {
+                _logger.LogError(tex, "DoWorkAsync, failed to refresh token because the refresh token has expired");
+                _timer?.Change(Timeout.Infinite, 0);
+                RaiseOnTokenExpired();
+                await Task.Delay(1000);
+                await ConfigureTimerAsync();
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "DoWorkAsync, failed to refresh token");
-
                 _timer?.Change(Timeout.Infinite, 0);
-
-                RaiseOnAuthenticationError();
-
+                RaiseOnTokenRefreshError(ex);
                 await Task.Delay(1000);
-
                 await ConfigureTimerAsync();
             }
         }

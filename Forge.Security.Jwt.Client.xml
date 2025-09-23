@@ -291,6 +291,12 @@
         <member name="E:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.OnAuthenticationError">
             <summary>Occurs when authentication required</summary>
         </member>
+        <member name="E:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.OnTokenExpired">
+            <summary>Occurs when authentication token expired</summary>
+        </member>
+        <member name="E:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.OnTokenRefreshError">
+            <summary>Occurs when refresh token error occured</summary>
+        </member>
         <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService},Forge.Security.Jwt.Shared.Client.Services.IAuthenticationService,Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider,Forge.Security.Jwt.Shared.Client.Models.DataStore,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService" /> class.</summary>
             <param name="logger">The logger.</param>
@@ -318,6 +324,13 @@
         </member>
         <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.RaiseOnAuthenticationError">
             <summary>Raises the authentication error event.</summary>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.RaiseOnTokenExpired">
+            <summary>Raises the on token expired.</summary>
+        </member>
+        <member name="M:Forge.Security.Jwt.Client.Services.JwtTokenRefreshHostedService.RaiseOnTokenRefreshError(System.Exception)">
+            <summary>Raises the on token refresh error.</summary>
+            <param name="ex">The ex.</param>
         </member>
     </members>
 </doc>
