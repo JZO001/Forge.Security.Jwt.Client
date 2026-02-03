@@ -8,7 +8,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netcoreapp3.1;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\.Documents\Forge.pfx</AssemblyOriginatorKeyFile>
 		<ProjectGuid>{4E2F389B-1E8F-47D7-B36A-6554B4C79BCF}</ProjectGuid>
@@ -18,7 +18,7 @@
 	<PropertyGroup>
 		<Product>Forge: reference, practice and patterns implementations and helper(s)</Product>
 		<Company>Forge Project Contributor(s)</Company>
-		<Copyright>Copyright © Zoltan Juhasz, 2022-2025</Copyright>
+		<Copyright>Copyright © Zoltan Juhasz, 2022-2026</Copyright>
 		<PackageId>Forge.Security.Jwt.Client</PackageId>
 		<Title>Forge Security Jwt Client</Title>
 		<Description>Forge Security Jwt Client</Description>
@@ -27,7 +27,7 @@
 		<Authors>Zoltan Juhasz</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryType>git</RepositoryType>
-		<AssemblyVersion>1.4.1.1</AssemblyVersion>
+		<AssemblyVersion>1.5.0.0</AssemblyVersion>
 		<Version>$(AssemblyVersion)</Version>
 		<FileVersion>$(AssemblyVersion)</FileVersion>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -44,11 +44,6 @@
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-		<PackageReference Include="Microsoft.JSInterop" Version="3.1.32" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="3.1.32" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
 		<PackageReference Include="Microsoft.JSInterop" Version="3.1.32" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="3.1.32" />
 	</ItemGroup>
@@ -73,7 +68,12 @@
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<PackageReference Include="Microsoft.JSInterop" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net10.0'">
 		<SupportedPlatform Include="browser" />
 	</ItemGroup>
 	

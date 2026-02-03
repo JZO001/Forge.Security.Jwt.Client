@@ -4,29 +4,6 @@
         <name>Forge.Security.Jwt.Client</name>
     </assembly>
     <members>
-        <member name="T:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory">
-            <summary>Represents a HttpClient with a unique configuration</summary>
-        </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.#ctor(Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions,System.IServiceProvider,Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory})">
-            <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory" /> class.</summary>
-            <param name="options">The options.</param>
-            <param name="serviceProvider">The serviceProvider.</param>
-            <param name="logger">The logger.</param>
-            <exception cref="T:System.ArgumentNullException">logger
-            or
-            options</exception>
-        </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.#ctor(Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions},System.IServiceProvider,Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory})">
-            <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory" /> class.</summary>
-            <param name="options">The options.</param>
-            <param name="serviceProvider">The serviceProvider.</param>
-            <param name="logger">The options.</param>
-            <exception cref="T:System.ArgumentNullException">options</exception>
-        </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.ApiCommunicationHttpClientFactory.GetHttpClient">
-            <summary>Gets the HTTP client.</summary>
-            <value>The HTTP client.</value>
-        </member>
         <member name="T:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService">
             <summary>API communication implementation</summary>
         </member>
@@ -36,21 +13,23 @@
         <member name="E:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.OnPrepareResponse">
             <summary>Occurs after the response arrived. Gain full control over the content deserialization.</summary>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService},Forge.Security.Jwt.Shared.Client.Api.IApiCommunicationHttpClientFactory,Forge.Security.Jwt.Shared.Serialization.ISerializationProvider,Forge.Security.Jwt.Shared.Client.Models.DataStore,Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationServiceOptions)">
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService},Forge.Security.Jwt.Shared.Serialization.ISerializationProvider,System.Net.Http.IHttpClientFactory,Forge.Security.Jwt.Shared.Client.Models.DataStore,Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationServiceOptions,Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions)">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService" /> class.</summary>
             <param name="logger">The logger.</param>
-            <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
             <param name="serializer">The serializer.</param>
+            <param name="httpClientFactory">The client factory.</param>
             <param name="dataStore">The dataStore.</param>
-            <param name="options">The options.</param>
+            <param name="options">The token api options.</param>
+            <param name="authOptions">The authentication options.</param>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService},Forge.Security.Jwt.Shared.Client.Api.IApiCommunicationHttpClientFactory,Forge.Security.Jwt.Shared.Serialization.ISerializationProvider,Forge.Security.Jwt.Shared.Client.Models.DataStore,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationServiceOptions})">
+        <member name="M:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.#ctor(Microsoft.Extensions.Logging.ILogger{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService},Forge.Security.Jwt.Shared.Serialization.ISerializationProvider,System.Net.Http.IHttpClientFactory,Forge.Security.Jwt.Shared.Client.Models.DataStore,Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationServiceOptions},Microsoft.Extensions.Options.IOptions{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
             <summary>Initializes a new instance of the <see cref="T:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService" /> class.</summary>
             <param name="logger">The logger.</param>
-            <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
             <param name="serializer">The serializer.</param>
+            <param name="httpClientFactory">The client factory.</param>
             <param name="dataStore">The dataStore.</param>
-            <param name="options">The options.</param>
+            <param name="options">The token api options.</param>
+            <param name="authOptions">The authentication options.</param>
         </member>
         <member name="P:Forge.Security.Jwt.Client.Api.TokenizedApiCommunicationService.DefaultEncoding">
             <summary>Gets or sets the default encoding for sending.</summary>

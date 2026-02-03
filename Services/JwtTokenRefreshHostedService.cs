@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using AuthenticationException = Forge.Security.Jwt.Shared.AuthenticationException;

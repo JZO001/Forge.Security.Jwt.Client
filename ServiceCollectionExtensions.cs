@@ -33,7 +33,6 @@ namespace Forge.Security.Jwt.Client
             return services
                 .AddSingleton<DataStore>()
                 .AddSingleton<ISerializationProvider, SystemTextJsonSerializer>()
-                .AddSingleton<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
                 .AddSingleton<ITokenizedApiCommunicationService, TokenizedApiCommunicationService>()
                 .AddSingleton<IAdditionalData, AdditionalData>(serviceProvider =>
                 {
@@ -76,7 +75,6 @@ namespace Forge.Security.Jwt.Client
             return services
                 .AddSingleton<DataStore>()
                 .AddSingleton<ISerializationProvider, SystemTextJsonSerializer>()
-                .AddSingleton<IApiCommunicationHttpClientFactory, ApiCommunicationHttpClientFactory>()
                 .AddSingleton<ITokenizedApiCommunicationService, TokenizedApiCommunicationService>()
                 .AddSingleton<IStorage<ParsedTokenData>, MemoryStorage<ParsedTokenData>>()
                 .AddSingleton<JwtTokenAuthenticationStateProvider>()

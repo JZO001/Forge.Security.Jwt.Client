@@ -1,5 +1,4 @@
 ﻿using Forge.Security.Jwt.Shared;
-using Forge.Security.Jwt.Shared.Client.Api;
 using Forge.Security.Jwt.Shared.Client.Models;
 using Forge.Security.Jwt.Shared.Client.Services;
 using Forge.Security.Jwt.Shared.Storage;
@@ -29,7 +28,7 @@ namespace Forge.Security.Jwt.Client.Services
 #endif
             _refreshService;
         private static int _lastHashcode = 0;
-        private static readonly object _lock = new object();
+        private static readonly object Lock = new object();
 
         private readonly ILogger<JwtTokenAuthenticationStateProvider> _logger;
         private readonly IStorage<ParsedTokenData> _storageService;
@@ -58,22 +57,22 @@ namespace Forge.Security.Jwt.Client.Services
         /// <param name="storage">The storage service.</param>
         /// <param name="dataStore">The dataStore.</param>
         /// <param name="serviceProvider">The service provider</param>
-        public JwtTokenAuthenticationStateProvider(ILogger<JwtTokenAuthenticationStateProvider> logger, 
-            IStorage<ParsedTokenData> storage, 
+        public JwtTokenAuthenticationStateProvider(ILogger<JwtTokenAuthenticationStateProvider> logger,
+            IStorage<ParsedTokenData> storage,
             DataStore dataStore,
             IServiceProvider serviceProvider)
         {
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (dataStore == null) throw new ArgumentNullException(nameof(dataStore));
-            if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
+            if (logger is null) throw new ArgumentNullException(nameof(logger));
+            if (storage is null) throw new ArgumentNullException(nameof(storage));
+            if (dataStore is null) throw new ArgumentNullException(nameof(dataStore));
+            if (serviceProvider is null) throw new ArgumentNullException(nameof(serviceProvider));
 
             _logger = logger;
             _storageService = storage;
             _dataStore = dataStore;
             _serviceProvider = serviceProvider;
 
-            _logger.LogDebug($"JwtTokenAuthenticationStateProvider.ctor, IStorage<ParsedTokenData>, hash: {storage.GetHashCode()}");
+            _logger.LogDebug("JwtTokenAuthenticationStateProvider.ctor, IStorage<ParsedTokenData>, hash: {Hash}", storage.GetHashCode());
         }
 
         /// <summary>Asynchronously gets an <see cref="T:Microsoft.AspNetCore.Components.Authorization.AuthenticationState">AuthenticationState</see> that describes the current user.</summary>
@@ -95,7 +94,8 @@ namespace Forge.Security.Jwt.Client.Services
                     jsRuntime = _serviceProvider.GetService(typeof(IJSRuntime)) as IJSRuntime;
                 }
                 catch (Exception) { }
-                if (jsRuntime == null)
+
+                if (jsRuntime is null)
                 {
                     _dataStore.UserAgent = ".";
                 }
@@ -104,6 +104,7 @@ namespace Forge.Security.Jwt.Client.Services
                     _dataStore.UserAgent = await jsRuntime.InvokeAsync<string>("eval", "(function() { return window.navigator.userAgent; })();");
                 }
             }
+
             if (_refreshService != null && _lastHashcode != GetHashCode())
             {
                 IRefreshTokenService service = _refreshService
@@ -115,16 +116,17 @@ namespace Forge.Security.Jwt.Client.Services
                 _refreshService = null;
                 await service.StopAsync(CancellationToken.None);
             }
-            if (_refreshService == null)
+
+            if (_refreshService is null)
             {
                 _logger.LogDebug("GetAuthenticationStateAsync, acquiring refresh service instance from DI");
-                lock (_lock)
+                lock (Lock)
                 {
-                    if (_refreshService == null)
+                    if (_refreshService is null)
                     {
                         _lastHashcode = GetHashCode();
                         _refreshService = _serviceProvider.GetService(typeof(IRefreshTokenService)) as IRefreshTokenService;
-                        if (_refreshService == null) _logger.LogDebug("GetAuthenticationStateAsync, refresh service instance is NULL from DI");
+                        if (_refreshService is null) _logger.LogDebug("GetAuthenticationStateAsync, refresh service instance is NULL from DI");
                     }
                 }
                 if (_refreshService != null)
@@ -182,7 +184,7 @@ namespace Forge.Security.Jwt.Client.Services
         /// <exception cref="Microsoft.IdentityModel.Tokens.SecurityTokenException">Invalid token</exception>
         public async Task AuthenticateUserAsync(ParsedTokenData parsedTokenData)
         {
-            if (parsedTokenData == null) throw new ArgumentNullException(nameof(parsedTokenData));
+            if (parsedTokenData is null) throw new ArgumentNullException(nameof(parsedTokenData));
             await AuthenticateUserInnerAsync(parsedTokenData);
         }
 
@@ -194,7 +196,7 @@ namespace Forge.Security.Jwt.Client.Services
 
             ClaimsPrincipal anonymusUser = new ClaimsPrincipal(new ClaimsIdentity());
             Task<AuthenticationState> authenticationState = Task.FromResult(new AuthenticationState(anonymusUser));
-            
+
             try
             {
                 await _storageService.RemoveAsync(PARSED_TOKEN_STORAGE_KEY);
@@ -205,9 +207,9 @@ namespace Forge.Security.Jwt.Client.Services
             }
 
             _dataStore.TokenData = new ParsedTokenData();
-            
+
             _logger.LogDebug("LogoutUserAsync, logged out");
-            
+
             NotifyAuthenticationStateChanged(authenticationState);
             NotifyAuthenticationStateStaticChanged(authenticationState);
         }
@@ -242,7 +244,7 @@ namespace Forge.Security.Jwt.Client.Services
 
             ClaimsPrincipal authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId) }, "apiauth"));
             Task<AuthenticationState> authenticationState = Task.FromResult(new AuthenticationState(authenticatedUser));
-            
+
             _logger.LogDebug("GetAuthenticationStateAsync, user authenticated by api auth");
 
             NotifyAuthenticationStateChanged(authenticationState);
@@ -272,9 +274,9 @@ namespace Forge.Security.Jwt.Client.Services
                 _logger.LogError(ex, ex.Message);
             }
 
-            if (result == null || IsTokenExpired(result.AccessTokenExpireAt))
+            if (result is null || IsTokenExpired(result.AccessTokenExpireAt))
             {
-                if (result == null) 
+                if (result == null)
                     _logger.LogDebug("GetParsedTokenDataAsync, token does not exist");
                 else
                     _logger.LogDebug("GetParsedTokenDataAsync, token expired");
@@ -316,6 +318,13 @@ namespace Forge.Security.Jwt.Client.Services
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             string accessTokenExpireDateStr = claims.Where(x => x.Type == "exp").Select(x => x.Value).FirstOrDefault();
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+            if (string.IsNullOrWhiteSpace(accessTokenExpireDateStr))
+            {
+                _logger.LogError("ParseTokenAsync, 'exp' claim not found in access token");
+                await LogoutUserAsync();
+                return result;
+            }
+
             DateTime accessTokenExpiredDate = EpochTime.DateTime(Convert.ToInt64(Math.Truncate(Convert.ToDouble(accessTokenExpireDateStr, CultureInfo.InvariantCulture))));
 
             if (IsTokenExpired(accessTokenExpiredDate))
@@ -337,7 +346,7 @@ namespace Forge.Security.Jwt.Client.Services
         /// <param name="expireDate">The expire date.</param>
         /// <returns>
         ///   <c>true</c> if the token expired, otherwise, <c>false</c>.</returns>
-        protected bool IsTokenExpired(DateTime expireDate)
+        protected static bool IsTokenExpired(DateTime expireDate)
         {
             return expireDate < DateTime.UtcNow;
         }

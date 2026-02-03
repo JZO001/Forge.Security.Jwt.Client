@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Forge.Security.Jwt.Shared.Client.Api;
+using Forge.Security.Jwt.Shared.Client.Models;
+using Forge.Security.Jwt.Shared.Serialization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
-using Forge.Security.Jwt.Shared.Client.Api;
-using Microsoft.Extensions.Logging;
-using Forge.Security.Jwt.Shared.Serialization;
-using Microsoft.Extensions.Options;
 using System.Threading;
-using Forge.Security.Jwt.Shared.Client.Models;
+using System.Threading.Tasks;
 
 namespace Forge.Security.Jwt.Client.Api
 {
@@ -17,10 +17,10 @@ namespace Forge.Security.Jwt.Client.Api
     {
 
         private readonly ILogger<TokenizedApiCommunicationService> _logger;
-        private readonly IApiCommunicationHttpClientFactory _apiCommunicationHttpClientFactory;
         private readonly ISerializationProvider _serializer;
         private readonly DataStore _dataStore;
         private readonly TokenizedApiCommunicationServiceOptions _options;
+        private readonly HttpClient _httpClient;
 
         /// <summary>Occurs before the request sent out to prepare it manually</summary>
         public event EventHandler<HttpRequestMessageEventArgs>
@@ -40,44 +40,51 @@ namespace Forge.Security.Jwt.Client.Api
 
         /// <summary>Initializes a new instance of the <see cref="TokenizedApiCommunicationService" /> class.</summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
         /// <param name="serializer">The serializer.</param>
+        /// <param name="httpClientFactory">The client factory.</param>
         /// <param name="dataStore">The dataStore.</param>
-        /// <param name="options">The options.</param>
-        public TokenizedApiCommunicationService(ILogger<TokenizedApiCommunicationService> logger,
-            IApiCommunicationHttpClientFactory apiCommunicationHttpClientFactory,
+        /// <param name="options">The token api options.</param>
+        /// <param name="authOptions">The authentication options.</param>
+        public TokenizedApiCommunicationService(
+            ILogger<TokenizedApiCommunicationService> logger,
             ISerializationProvider serializer,
+            IHttpClientFactory httpClientFactory,
             DataStore dataStore,
-            TokenizedApiCommunicationServiceOptions options)
+            TokenizedApiCommunicationServiceOptions options,
+            JwtClientAuthenticationCoreOptions authOptions)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
-            if (apiCommunicationHttpClientFactory == null) throw new ArgumentNullException(nameof(apiCommunicationHttpClientFactory));
             if (serializer == null) throw new ArgumentNullException(nameof(serializer));
+            if (httpClientFactory == null) throw new ArgumentNullException(nameof(httpClientFactory));
             if (dataStore == null) throw new ArgumentNullException(nameof(dataStore));
             if (options == null) throw new ArgumentNullException(nameof(options));
+            if (authOptions == null) throw new ArgumentNullException(nameof(authOptions));
 
             _logger = logger;
-            _apiCommunicationHttpClientFactory = apiCommunicationHttpClientFactory;
             _serializer = serializer;
             _dataStore = dataStore;
             _options = options;
 
-            _logger.LogDebug($"TokenizedApiCommunicationService.ctor, IApiCommunicationHttpClientFactory, hash: {apiCommunicationHttpClientFactory.GetHashCode()}");
-            _logger.LogDebug($"TokenizedApiCommunicationService.ctor, ISerializationProvider, hash: {serializer.GetHashCode()}");
+            _httpClient = httpClientFactory.CreateClient(Consts.HTTP_CLIENT_FACTORY_NAME);
+            _httpClient.BaseAddress = new Uri(authOptions.BaseAddress);
+
+            _logger.LogDebug("TokenizedApiCommunicationService.ctor, ISerializationProvider, hash: {Hash}", serializer.GetHashCode());
         }
 
         /// <summary>Initializes a new instance of the <see cref="TokenizedApiCommunicationService" /> class.</summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="apiCommunicationHttpClientFactory">The HTTP client.</param>
         /// <param name="serializer">The serializer.</param>
+        /// <param name="httpClientFactory">The client factory.</param>
         /// <param name="dataStore">The dataStore.</param>
-        /// <param name="options">The options.</param>
-        public TokenizedApiCommunicationService(ILogger<TokenizedApiCommunicationService> logger, 
-            IApiCommunicationHttpClientFactory apiCommunicationHttpClientFactory,
+        /// <param name="options">The token api options.</param>
+        /// <param name="authOptions">The authentication options.</param>
+        public TokenizedApiCommunicationService(ILogger<TokenizedApiCommunicationService> logger,
             ISerializationProvider serializer,
+            IHttpClientFactory httpClientFactory,
             DataStore dataStore,
-            IOptions<TokenizedApiCommunicationServiceOptions> options)
-            : this(logger, apiCommunicationHttpClientFactory, serializer, dataStore, options?.Value)
+            IOptions<TokenizedApiCommunicationServiceOptions> options,
+            IOptions<JwtClientAuthenticationCoreOptions> authOptions)
+            : this(logger, serializer, httpClientFactory, dataStore, options?.Value, authOptions?.Value)
         {
         }
 
@@ -178,12 +185,6 @@ namespace Forge.Security.Jwt.Client.Api
 #endif
                 result = default;
 
-            HttpClient
-#if NETSTANDARD2_0
-#else
-                ?
-#endif
-                httpClient = null;
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(httpMethod, uri);
@@ -213,10 +214,9 @@ namespace Forge.Security.Jwt.Client.Api
                     prepareRequestEvent(this, new HttpRequestMessageEventArgs(request, data));
                 }
 
-                httpClient = _apiCommunicationHttpClientFactory.GetHttpClient();
-                _logger.LogDebug($"ApiCall, sending {httpMethod.Method} to baseAddress: {httpClient.BaseAddress}, uri: {uri}");
-                HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
-                _logger.LogDebug($"ApiCall, response arrived from baseAddress: {httpClient.BaseAddress}, uri: {uri}, method: {httpMethod.Method}");
+                _logger.LogDebug("ApiCall, sending {Method} to baseAddress: {BaseAddress}, uri: {Uri}", httpMethod.Method, _httpClient.BaseAddress, uri);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                _logger.LogDebug("ApiCall, response arrived from baseAddress: {BaseAddress}, uri: {Uri}, method: {Method}", _httpClient.BaseAddress, uri, httpMethod.Method);
 
                 string
 #if NETSTANDARD2_0
@@ -227,7 +227,7 @@ namespace Forge.Security.Jwt.Client.Api
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogDebug($"ApiCall, response indicates an unsuccessful operation from {httpClient.BaseAddress}{uri}, method: {httpMethod.Method}, status code: {response.StatusCode}");
+                    _logger.LogDebug("ApiCall, response indicates an unsuccessful operation from {BaseAddress}{Uri}, method: {Method}, status code: {StatusCode}", _httpClient.BaseAddress, uri, httpMethod.Method, response.StatusCode);
                     throw new Shared.Client.Api.HttpRequestException(response.StatusCode, jsonResult);
                 }
 
@@ -258,10 +258,6 @@ namespace Forge.Security.Jwt.Client.Api
             {
                 _logger.LogError(e, e.Message);
                 throw;
-            }
-            finally
-            {
-                httpClient?.Dispose();
             }
 
 #pragma warning disable CS8603 // Possible null reference return.

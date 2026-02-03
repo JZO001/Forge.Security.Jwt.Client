@@ -66,9 +66,9 @@ namespace Forge.Security.Jwt.Client.Services
             _dataStore = dataStore;
             _options = options.Value;
 
-            _logger.LogDebug($"AuthenticationService.ctor, ITokenizedApiCommunicationService, hash: {apiService.GetHashCode()}");
-            _logger.LogDebug($"AuthenticationService.ctor, AuthenticationStateProvider, hash: {authenticationStateProvider.GetHashCode()}");
-            _logger.LogDebug($"AuthenticationService.ctor, IAdditionalData, hash: {additionalData?.GetHashCode()}");
+            _logger.LogDebug("AuthenticationService.ctor, ITokenizedApiCommunicationService, hash: {Hash}", apiService.GetHashCode());
+            _logger.LogDebug("AuthenticationService.ctor, AuthenticationStateProvider, hash: {Hash}", authenticationStateProvider.GetHashCode());
+            _logger.LogDebug("AuthenticationService.ctor, IAdditionalData, hash: {Hash}", additionalData?.GetHashCode());
         }
 
         /// <summary>Finalizes an instance of the <see cref="AuthenticationService" /> class.</summary>
@@ -99,7 +99,11 @@ namespace Forge.Security.Jwt.Client.Services
             where TAuthCredentials : class, IAdditionalData
             where TAuthResult : class, IAuthenticationResponse, new()
         {
+#if NETSTANDARD2_0
             TAuthResult result = default;
+#else
+            TAuthResult result = default!;
+#endif
 
             _logger.LogDebug("AuthenticateUserAsync, authenticate user...");
 
@@ -192,9 +196,9 @@ namespace Forge.Security.Jwt.Client.Services
                 _logger.LogError(ex, ex.Message);
             }
 
-            bool result = response == null ? false : response.Result;
+            bool result = response is null ? false : response.Result;
 
-            _logger.LogDebug($"LogoutUserAsync, logout completed. Result: {result}");
+            _logger.LogDebug("LogoutUserAsync, logout completed. Result: {Result}", result);
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
             return result;
@@ -231,7 +235,7 @@ namespace Forge.Security.Jwt.Client.Services
             BooleanResponse response = await _apiService.PostAsync<TokenRequest, BooleanResponse>(_options.ValidateTokenUri, request, cancellationToken);
             if (response != null) result = response.Result;
 
-            _logger.LogDebug($"ValidateTokenAsync, validation result: {result}");
+            _logger.LogDebug("ValidateTokenAsync, validation result: {Result}", result);
 
             return result;
         }
@@ -319,9 +323,17 @@ namespace Forge.Security.Jwt.Client.Services
             if (task.Result.User.Identity.IsAuthenticated)
             {
                 ClaimsIdentity claimsIdentity = (ClaimsIdentity)task.Result.User.Identity;
-                string userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+                Claim userIdClaim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
 
-                _logger.LogDebug($"AuthenticationStateChangedEventHandler, authenticated userId: {userId}");
+                if (userIdClaim is null)
+                {
+                    _logger.LogWarning("AuthenticationStateChangedEventHandler, NameIdentifier claim not found");
+                    OnUserAuthenticationStateChanged?.Invoke(this, new UserDataEventArgs(string.Empty));
+                    return;
+                }
+
+                string userId = userIdClaim.Value;
+                _logger.LogDebug("AuthenticationStateChangedEventHandler, authenticated userId: {UserId}", userId);
                 
                 OnUserAuthenticationStateChanged?.Invoke(this, new UserDataEventArgs(userId));
             }
