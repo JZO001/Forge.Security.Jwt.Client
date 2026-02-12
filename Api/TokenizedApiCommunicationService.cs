@@ -20,7 +20,8 @@ namespace Forge.Security.Jwt.Client.Api
         private readonly ISerializationProvider _serializer;
         private readonly DataStore _dataStore;
         private readonly TokenizedApiCommunicationServiceOptions _options;
-        private readonly HttpClient _httpClient;
+        private readonly JwtClientAuthenticationCoreOptions _authOptions;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         /// <summary>Occurs before the request sent out to prepare it manually</summary>
         public event EventHandler<HttpRequestMessageEventArgs>
@@ -64,9 +65,8 @@ namespace Forge.Security.Jwt.Client.Api
             _serializer = serializer;
             _dataStore = dataStore;
             _options = options;
-
-            _httpClient = httpClientFactory.CreateClient(Consts.HTTP_CLIENT_FACTORY_NAME);
-            _httpClient.BaseAddress = new Uri(authOptions.BaseAddress);
+            _authOptions = authOptions;
+            _httpClientFactory = httpClientFactory;
 
             _logger.LogDebug("TokenizedApiCommunicationService.ctor, ISerializationProvider, hash: {Hash}", serializer.GetHashCode());
         }
@@ -183,7 +183,7 @@ namespace Forge.Security.Jwt.Client.Api
 #else
             ?
 #endif
-                result = default;
+                result;
 
             try
             {
@@ -214,40 +214,44 @@ namespace Forge.Security.Jwt.Client.Api
                     prepareRequestEvent(this, new HttpRequestMessageEventArgs(request, data));
                 }
 
-                _logger.LogDebug("ApiCall, sending {Method} to baseAddress: {BaseAddress}, uri: {Uri}", httpMethod.Method, _httpClient.BaseAddress, uri);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                _logger.LogDebug("ApiCall, response arrived from baseAddress: {BaseAddress}, uri: {Uri}, method: {Method}", _httpClient.BaseAddress, uri, httpMethod.Method);
+                using (HttpClient httpClient = _httpClientFactory.CreateClient(Consts.HTTP_CLIENT_FACTORY_NAME))
+                {
+                    httpClient.BaseAddress = new Uri(_authOptions.BaseAddress);
 
-                string
+                    _logger.LogDebug("ApiCall, sending {Method} to baseAddress: {BaseAddress}, uri: {Uri}", httpMethod.Method, httpClient.BaseAddress, uri);
+                    HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+                    _logger.LogDebug("ApiCall, response arrived from baseAddress: {BaseAddress}, uri: {Uri}, method: {Method}", httpClient.BaseAddress, uri, httpMethod.Method);
+                    string
 #if NETSTANDARD2_0
 #else
-            ?
+                    ?
 #endif
                     jsonResult = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogDebug("ApiCall, response indicates an unsuccessful operation from {BaseAddress}{Uri}, method: {Method}, status code: {StatusCode}", _httpClient.BaseAddress, uri, httpMethod.Method, response.StatusCode);
-                    throw new Shared.Client.Api.HttpRequestException(response.StatusCode, jsonResult);
-                }
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogDebug("ApiCall, response indicates an unsuccessful operation from {BaseAddress}{Uri}, method: {Method}, status code: {StatusCode}", httpClient.BaseAddress, uri, httpMethod.Method, response.StatusCode);
+                        throw new Shared.Client.Api.HttpRequestException(response.StatusCode, jsonResult);
+                    }
 
-                var prepareResponseEvent = OnPrepareResponse;
-                if (prepareResponseEvent == null)
-                {
-                    result = _serializer.Deserialize<TResult>(jsonResult);
-                }
-                else
-                {
-                    HttpResponseMessageEventArgs ev = new HttpResponseMessageEventArgs(response, typeof(TResult));
-                    prepareResponseEvent(this, ev);
+                    var prepareResponseEvent = OnPrepareResponse;
+                    if (prepareResponseEvent == null)
+                    {
+                        result = _serializer.Deserialize<TResult>(jsonResult);
+                    }
+                    else
+                    {
+                        HttpResponseMessageEventArgs ev = new HttpResponseMessageEventArgs(response, typeof(TResult));
+                        prepareResponseEvent(this, ev);
 #if NETSTANDARD2_0
-                    TResult responseData = (TResult)ev.ResponseData;
+                        TResult responseData = (TResult)ev.ResponseData;
 #else
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                    TResult? responseData = (TResult)ev.ResponseData;
+                        TResult? responseData = (TResult)ev.ResponseData;
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #endif
-                    result = responseData;
+                        result = responseData;
+                    }
                 }
             }
             catch (Shared.Client.Api.HttpRequestException)

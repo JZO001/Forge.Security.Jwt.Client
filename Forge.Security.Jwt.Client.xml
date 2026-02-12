@@ -106,7 +106,7 @@
         <member name="T:Forge.Security.Jwt.Client.ServiceCollectionExtensions">
             <summary>ServiceCollection extension methods</summary>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.ServiceCollectionExtensions.AddForgeJwtClientAuthenticationCore(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
+        <member name="M:Forge.Security.Jwt.Client.ServiceCollectionExtensions.AddForgeJwtClientAuthenticationCore(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions},System.Net.Http.HttpMessageHandler)">
             <summary>
             Registers the Forge Jwt Client side security services as scoped.
             </summary>

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
+using System.Net.Http;
 
 namespace Forge.Security.Jwt.Client
 {
@@ -21,14 +22,28 @@ namespace Forge.Security.Jwt.Client
         /// Registers the Forge Jwt Client side security services as scoped.
         /// </summary>
         /// <returns>IServiceCollection</returns>
-        public static IServiceCollection AddForgeJwtClientAuthenticationCore(this IServiceCollection services, Action<JwtClientAuthenticationCoreOptions>
+        public static IServiceCollection AddForgeJwtClientAuthenticationCore(this IServiceCollection services,
+            Action<JwtClientAuthenticationCoreOptions>
 #if NETSTANDARD2_0
 #else
             ?
 #endif
-            configure = null)
+            configure = null,
+            HttpMessageHandler
+#if NETSTANDARD2_0
+#else
+            ?
+#endif
+            httpMessageHandler = null)
         {
-            services.AddHttpClient(Consts.HTTP_CLIENT_FACTORY_NAME);
+            if (httpMessageHandler == null)
+            {
+                services.AddHttpClient(Consts.HTTP_CLIENT_FACTORY_NAME);
+            }
+            else
+            {
+                services.AddHttpClient(Consts.HTTP_CLIENT_FACTORY_NAME).ConfigurePrimaryHttpMessageHandler(_ => httpMessageHandler);
+            }
 
             return services
                 .AddSingleton<DataStore>()
@@ -62,7 +77,7 @@ namespace Forge.Security.Jwt.Client
         /// Registers the Forge Jwt Client side security services as singletons.
         /// </summary>
         /// <returns>IServiceCollection</returns>
-        public static IServiceCollection AddForgeJwtClientAuthenticationCoreAsSingleton(this IServiceCollection services, 
+        public static IServiceCollection AddForgeJwtClientAuthenticationCoreAsSingleton(this IServiceCollection services,
             Action<JwtClientAuthenticationCoreOptions>
 #if NETSTANDARD2_0
 #else
