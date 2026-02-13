@@ -112,7 +112,7 @@
             </summary>
             <returns>IServiceCollection</returns>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.ServiceCollectionExtensions.AddForgeJwtClientAuthenticationCoreAsSingleton(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions})">
+        <member name="M:Forge.Security.Jwt.Client.ServiceCollectionExtensions.AddForgeJwtClientAuthenticationCoreAsSingleton(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Forge.Security.Jwt.Shared.Client.Models.JwtClientAuthenticationCoreOptions},System.Net.Http.HttpMessageHandler)">
             <summary>
             Registers the Forge Jwt Client side security services as singletons.
             </summary>

@@ -27,7 +27,7 @@
 		<Authors>Zoltan Juhasz</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryType>git</RepositoryType>
-		<AssemblyVersion>1.5.1</AssemblyVersion>
+		<AssemblyVersion>1.5.2</AssemblyVersion>
 		<Version>$(AssemblyVersion)</Version>
 		<FileVersion>$(AssemblyVersion)</FileVersion>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
