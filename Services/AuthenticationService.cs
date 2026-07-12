@@ -82,11 +82,11 @@ namespace Forge.Security.Jwt.Client.Services
         /// <typeparam name="TAuthResult">The type of the authentication result.</typeparam>
         /// <param name="userCredentials">The user credentials.</param>
         /// <returns>Authentication result data</returns>
-        public async Task<TAuthResult> AuthenticateUserAsync<TAuthCredentials, TAuthResult>(TAuthCredentials userCredentials)
+        public Task<TAuthResult> AuthenticateUserAsync<TAuthCredentials, TAuthResult>(TAuthCredentials userCredentials)
             where TAuthCredentials : class, IAdditionalData
             where TAuthResult : class, IAuthenticationResponse, new()
         {
-            return await AuthenticateUserAsync<TAuthCredentials, TAuthResult>(userCredentials, CancellationToken.None);
+            return AuthenticateUserAsync<TAuthCredentials, TAuthResult>(userCredentials, CancellationToken.None);
         }
 
         /// <summary>Authenticates the user with the given credentials</summary>
@@ -110,17 +110,17 @@ namespace Forge.Security.Jwt.Client.Services
             try
             {
                 userCredentials.SecondaryKeys = _additionalData.SecondaryKeys?.ToList();
-                result = await _apiService.PostAsync<TAuthCredentials, TAuthResult>(_options.AuthenticationUri, userCredentials, cancellationToken);
-                await _authenticationStateProvider.AuthenticateUserAsync<TAuthResult>(result);
-                
+                result = await _apiService.PostAsync<TAuthCredentials, TAuthResult>(_options.AuthenticationUri, userCredentials, cancellationToken).ConfigureAwait(false);
+                await _authenticationStateProvider.AuthenticateUserAsync<TAuthResult>(result).ConfigureAwait(false);
+
                 _logger.LogDebug("AuthenticateUserAsync, authentication was successful");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
                 _logger.LogDebug("AuthenticateUserAsync, authentication failed");
-                
-                await LogoutUserAsync();
+
+                await LogoutUserAsync().ConfigureAwait(false);
                 result = new TAuthResult();
             }
 
@@ -136,31 +136,17 @@ namespace Forge.Security.Jwt.Client.Services
 #endif
             > GetCurrentUserInfoAsync()
         {
-            ParsedTokenData result = await GetParsedTokenDataAsync();
-
-            if (result == null)
-            {
-                await LogoutUserAsync();
-            }
-
-            return result;
-        }
-
-        /// <summary>Logs out the current user.</summary>
-        /// <returns>True, if the logout was successful, otherwise, False</returns>
-        public async Task<bool> LogoutUserAsync()
-        {
-            return await LogoutUserAsync(CancellationToken.None);
+            return await GetParsedTokenDataAsync().ConfigureAwait(false);
         }
 
         /// <summary>Logs out the current user.</summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>True, if the logout was successful, otherwise, False</returns>
-        public async Task<bool> LogoutUserAsync(CancellationToken cancellationToken)
+        public async Task<bool> LogoutUserAsync(CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("LogoutUserAsync, logging out...");
-            
-            ParsedTokenData parsedTokenData = await GetParsedTokenDataAsync();
+
+            ParsedTokenData parsedTokenData = await GetParsedTokenDataAsync().ConfigureAwait(false);
 
             BooleanResponse
 #if NETSTANDARD2_0
@@ -168,16 +154,17 @@ namespace Forge.Security.Jwt.Client.Services
             ?
 #endif
                 response = null;
+
             if (!string.IsNullOrWhiteSpace(parsedTokenData.AccessToken))
             {
                 try
                 {
 #if NETSTANDARD2_0
-                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse>(_options.LogoutUri, _additionalData, cancellationToken);
+                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse>(_options.LogoutUri, _additionalData, cancellationToken).ConfigureAwait(false);
 #else
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse?>(_options.LogoutUri, _additionalData, cancellationToken);
+                    response = await _apiService.PostAsync<IAdditionalData, BooleanResponse?>(_options.LogoutUri, _additionalData, cancellationToken).ConfigureAwait(false);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8604 // Possible null reference argument.
 #endif
@@ -189,7 +176,7 @@ namespace Forge.Security.Jwt.Client.Services
             }
             try
             {
-                await _authenticationStateProvider.LogoutUserAsync();
+                await _authenticationStateProvider.LogoutUserAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -209,7 +196,7 @@ namespace Forge.Security.Jwt.Client.Services
         /// <returns>True, if the token is valid, otherwise, False.</returns>
         public async Task<bool> ValidateTokenAsync()
         {
-            return await ValidateTokenAsync(CancellationToken.None);
+            return await ValidateTokenAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>Validates the current token.</summary>
@@ -221,7 +208,7 @@ namespace Forge.Security.Jwt.Client.Services
 
             bool result = false;
 
-            ParsedTokenData parsedTokenData = await GetParsedTokenDataAsync();
+            ParsedTokenData parsedTokenData = await GetParsedTokenDataAsync().ConfigureAwait(false);
             if (parsedTokenData.RefreshTokenExpireAt < DateTime.UtcNow)
             {
                 _logger.LogDebug("ValidateTokenAsync, token expired");
@@ -232,7 +219,7 @@ namespace Forge.Security.Jwt.Client.Services
             request.RefreshTokenString = parsedTokenData.RefreshToken;
             request.SecondaryKeys = _additionalData.SecondaryKeys?.ToList();
 
-            BooleanResponse response = await _apiService.PostAsync<TokenRequest, BooleanResponse>(_options.ValidateTokenUri, request, cancellationToken);
+            BooleanResponse response = await _apiService.PostAsync<TokenRequest, BooleanResponse>(_options.ValidateTokenUri, request, cancellationToken).ConfigureAwait(false);
             if (response != null) result = response.Result;
 
             _logger.LogDebug("ValidateTokenAsync, validation result: {Result}", result);
@@ -249,7 +236,7 @@ namespace Forge.Security.Jwt.Client.Services
 #endif
             > RefreshTokenAsync()
         {
-            return await RefreshTokenAsync(CancellationToken.None);
+            return await RefreshTokenAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>Refreshes the current token and get a new one.</summary>
@@ -268,7 +255,7 @@ namespace Forge.Security.Jwt.Client.Services
 #else
             ParsedTokenData?
 #endif
-                parsedTokenData = await GetParsedTokenDataAsync();
+                parsedTokenData = await GetParsedTokenDataAsync().ConfigureAwait(false);
 
             if (parsedTokenData.RefreshTokenExpireAt < DateTime.UtcNow)
             {
@@ -283,9 +270,9 @@ namespace Forge.Security.Jwt.Client.Services
 
             try
             {
-                JwtTokenResult jwtTokenResult = await _apiService.PostAsync<TokenRequest, JwtTokenResult>(_options.RefreshUri, request, cancellationToken);
-                await _authenticationStateProvider.AuthenticateUserAsync<JwtTokenResult>(jwtTokenResult);
-                _dataStore.TokenData = parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync();
+                JwtTokenResult jwtTokenResult = await _apiService.PostAsync<TokenRequest, JwtTokenResult>(_options.RefreshUri, request, cancellationToken).ConfigureAwait(false);
+                await _authenticationStateProvider.AuthenticateUserAsync<JwtTokenResult>(jwtTokenResult).ConfigureAwait(false);
+                _dataStore.TokenData = parsedTokenData = await _authenticationStateProvider.GetParsedTokenDataAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -296,7 +283,7 @@ namespace Forge.Security.Jwt.Client.Services
                 {
                     if (hre.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
-                        await LogoutUserAsync();
+                        await LogoutUserAsync().ConfigureAwait(false);
                         throw new AuthenticationException();
                     }
                     else
@@ -334,13 +321,13 @@ namespace Forge.Security.Jwt.Client.Services
 
                 string userId = userIdClaim.Value;
                 _logger.LogDebug("AuthenticationStateChangedEventHandler, authenticated userId: {UserId}", userId);
-                
+
                 OnUserAuthenticationStateChanged?.Invoke(this, new UserDataEventArgs(userId));
             }
             else
             {
                 _logger.LogDebug("AuthenticationStateChangedEventHandler, no authenticated user");
-                
+
                 OnUserAuthenticationStateChanged?.Invoke(this, new UserDataEventArgs(string.Empty));
             }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
@@ -349,7 +336,7 @@ namespace Forge.Security.Jwt.Client.Services
         private async Task<ParsedTokenData> GetParsedTokenDataAsync()
         {
             ParsedTokenData result = _dataStore.TokenData;
-            if (string.IsNullOrWhiteSpace(result.AccessToken)) result = await _authenticationStateProvider.GetParsedTokenDataAsync();
+            if (string.IsNullOrWhiteSpace(result.AccessToken)) result = await _authenticationStateProvider.GetParsedTokenDataAsync().ConfigureAwait(false);
             return result;
         }
 

@@ -158,10 +158,6 @@
             <summary>Gets the current user information.</summary>
             <returns>A data object which responded back by the provider/server/service</returns>
         </member>
-        <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.LogoutUserAsync">
-            <summary>Logs out the current user.</summary>
-            <returns>True, if the logout was successful, otherwise, False</returns>
-        </member>
         <member name="M:Forge.Security.Jwt.Client.Services.AuthenticationService.LogoutUserAsync(System.Threading.CancellationToken)">
             <summary>Logs out the current user.</summary>
             <param name="cancellationToken">The cancellation token.</param>

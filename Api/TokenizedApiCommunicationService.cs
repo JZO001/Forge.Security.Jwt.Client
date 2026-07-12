@@ -97,12 +97,12 @@ namespace Forge.Security.Jwt.Client.Api
         /// <param name="uri">The URI.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The result object</returns>
-        public async Task<TResult> GetAsync<TResult>(string uri, CancellationToken cancellationToken)
+        public Task<TResult> GetAsync<TResult>(string uri, CancellationToken cancellationToken)
 #if NETSTANDARD || NETCOREAPP3_1
             where TResult : class
 #endif
         {
-            return await ApiCall<TResult>(HttpMethod.Get, uri, null, cancellationToken);
+            return ApiCall<TResult>(HttpMethod.Get, uri, null, cancellationToken);
         }
 
         /// <summary>Posts data or creates a resource</summary>
@@ -112,7 +112,7 @@ namespace Forge.Security.Jwt.Client.Api
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The result data</returns>
-        public async Task<TResult> PostAsync<TData, TResult>(string uri, TData
+        public Task<TResult> PostAsync<TData, TResult>(string uri, TData
 #if NETSTANDARD2_0
 #else
             ?
@@ -123,7 +123,7 @@ namespace Forge.Security.Jwt.Client.Api
             where TResult : class
 #endif
         {
-            return await ApiCall<TResult>(HttpMethod.Post, uri, data, cancellationToken);
+            return ApiCall<TResult>(HttpMethod.Post, uri, data, cancellationToken);
         }
 
         /// <summary>Puts data or update a resource</summary>
@@ -133,7 +133,7 @@ namespace Forge.Security.Jwt.Client.Api
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The result data</returns>
-        public async Task<TResult> PutAsync<TData, TResult>(string uri, TData
+        public Task<TResult> PutAsync<TData, TResult>(string uri, TData
 #if NETSTANDARD2_0
 #else
             ?
@@ -144,7 +144,7 @@ namespace Forge.Security.Jwt.Client.Api
             where TResult : class
 #endif
         {
-            return await ApiCall<TResult>(HttpMethod.Put, uri, data, cancellationToken);
+            return ApiCall<TResult>(HttpMethod.Put, uri, data, cancellationToken);
         }
 
         /// <summary>Deletes a</summary>
@@ -152,12 +152,12 @@ namespace Forge.Security.Jwt.Client.Api
         /// <param name="uri">The URI.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The return data</returns>
-        public async Task<TResult> DeleteAsync<TResult>(string uri, CancellationToken cancellationToken)
+        public Task<TResult> DeleteAsync<TResult>(string uri, CancellationToken cancellationToken)
 #if NETSTANDARD || NETCOREAPP3_1
             where TResult : class
 #endif
         {
-            return await ApiCall<TResult>(HttpMethod.Delete, uri, null, cancellationToken);
+            return ApiCall<TResult>(HttpMethod.Delete, uri, null, cancellationToken);
         }
 
         /// <summary>Perform the API call with the given parameters.</summary>
@@ -219,14 +219,14 @@ namespace Forge.Security.Jwt.Client.Api
                     httpClient.BaseAddress = new Uri(_authOptions.BaseAddress);
 
                     _logger.LogDebug("ApiCall, sending {Method} to baseAddress: {BaseAddress}, uri: {Uri}", httpMethod.Method, httpClient.BaseAddress, uri);
-                    HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+                    HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                     _logger.LogDebug("ApiCall, response arrived from baseAddress: {BaseAddress}, uri: {Uri}, method: {Method}", httpClient.BaseAddress, uri, httpMethod.Method);
                     string
 #if NETSTANDARD2_0
 #else
                     ?
 #endif
-                    jsonResult = await response.Content.ReadAsStringAsync();
+                    jsonResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                     if (!response.IsSuccessStatusCode)
                     {

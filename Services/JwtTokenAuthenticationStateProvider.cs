@@ -101,7 +101,7 @@ namespace Forge.Security.Jwt.Client.Services
                 }
                 else
                 {
-                    _dataStore.UserAgent = await jsRuntime.InvokeAsync<string>("eval", "(function() { return window.navigator.userAgent; })();");
+                    _dataStore.UserAgent = await jsRuntime.InvokeAsync<string>("eval", "(function() { return window.navigator.userAgent; })();").ConfigureAwait(false);
                 }
             }
 
@@ -114,7 +114,7 @@ namespace Forge.Security.Jwt.Client.Services
 #endif
                     ;
                 _refreshService = null;
-                await service.StopAsync(CancellationToken.None);
+                await service.StopAsync(CancellationToken.None).ConfigureAwait(false);
             }
 
             if (_refreshService is null)
@@ -132,11 +132,11 @@ namespace Forge.Security.Jwt.Client.Services
                 if (_refreshService != null)
                 {
                     _logger.LogDebug("GetAuthenticationStateAsync, trying to start refresh service instance from DI");
-                    await _refreshService.StartAsync(CancellationToken.None);
+                    await _refreshService.StartAsync(CancellationToken.None).ConfigureAwait(false);
                 }
             }
 
-            ParsedTokenData parsedTokenData = await GetParsedTokenDataAsync();
+            ParsedTokenData parsedTokenData = await GetParsedTokenDataAsync().ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(parsedTokenData.AccessToken))
             {
@@ -151,14 +151,14 @@ namespace Forge.Security.Jwt.Client.Services
                 try
                 {
                     _logger.LogDebug("GetAuthenticationStateAsync, authenticating user");
-                    await AuthenticateUserInnerAsync(parsedTokenData);
+                    await AuthenticateUserInnerAsync(parsedTokenData).ConfigureAwait(false);
                     _logger.LogDebug("GetAuthenticationStateAsync, user authenticated");
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, ex.Message);
                     _logger.LogDebug("GetAuthenticationStateAsync, failed to re-authenticate user. Logging out...");
-                    await LogoutUserAsync();
+                    await LogoutUserAsync().ConfigureAwait(false);
                     _logger.LogDebug("GetAuthenticationStateAsync, user logged out...");
                     return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
                 }
@@ -175,8 +175,8 @@ namespace Forge.Security.Jwt.Client.Services
         /// <returns>Task</returns>
         public async Task AuthenticateUserAsync<TAuthenticationResponse>(TAuthenticationResponse authenticationResponse) where TAuthenticationResponse : IAuthenticationResponse, new()
         {
-            ParsedTokenData parsedTokenData = await ParseTokenAsync(authenticationResponse);
-            await AuthenticateUserInnerAsync(parsedTokenData);
+            ParsedTokenData parsedTokenData = await ParseTokenAsync(authenticationResponse).ConfigureAwait(false);
+            await AuthenticateUserInnerAsync(parsedTokenData).ConfigureAwait(false);
         }
 
         /// <summary>Authenticates the user with the given authentication response.</summary>
@@ -185,7 +185,7 @@ namespace Forge.Security.Jwt.Client.Services
         public async Task AuthenticateUserAsync(ParsedTokenData parsedTokenData)
         {
             if (parsedTokenData is null) throw new ArgumentNullException(nameof(parsedTokenData));
-            await AuthenticateUserInnerAsync(parsedTokenData);
+            await AuthenticateUserInnerAsync(parsedTokenData).ConfigureAwait(false);
         }
 
         /// <summary>Marks the user as logged out</summary>
@@ -199,7 +199,7 @@ namespace Forge.Security.Jwt.Client.Services
 
             try
             {
-                await _storageService.RemoveAsync(PARSED_TOKEN_STORAGE_KEY);
+                await _storageService.RemoveAsync(PARSED_TOKEN_STORAGE_KEY).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -233,7 +233,7 @@ namespace Forge.Security.Jwt.Client.Services
             }
             try
             {
-                await _storageService.SetAsync(PARSED_TOKEN_STORAGE_KEY, parsedTokenData);
+                await _storageService.SetAsync(PARSED_TOKEN_STORAGE_KEY, parsedTokenData).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -267,7 +267,7 @@ namespace Forge.Security.Jwt.Client.Services
                 result = null;
             try
             {
-                result = await _storageService.GetAsync(PARSED_TOKEN_STORAGE_KEY);
+                result = await _storageService.GetAsync(PARSED_TOKEN_STORAGE_KEY).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -321,7 +321,7 @@ namespace Forge.Security.Jwt.Client.Services
             if (string.IsNullOrWhiteSpace(accessTokenExpireDateStr))
             {
                 _logger.LogError("ParseTokenAsync, 'exp' claim not found in access token");
-                await LogoutUserAsync();
+                await LogoutUserAsync().ConfigureAwait(false);
                 return result;
             }
 
@@ -329,7 +329,7 @@ namespace Forge.Security.Jwt.Client.Services
 
             if (IsTokenExpired(accessTokenExpiredDate))
             {
-                await LogoutUserAsync();
+                await LogoutUserAsync().ConfigureAwait(false);
                 return result;
             }
 

@@ -67,7 +67,7 @@ namespace Forge.Security.Jwt.Client.Services
         /// <exception cref="System.ArgumentNullException">authenticationService
         /// or
         /// jwtTokenAuthenticationStateProvider</exception>
-        public JwtTokenRefreshHostedService(ILogger<JwtTokenRefreshHostedService> logger, 
+        public JwtTokenRefreshHostedService(ILogger<JwtTokenRefreshHostedService> logger,
             IAuthenticationService authenticationService,
             AuthenticationStateProvider authenticationStateProvider,
             DataStore dataStore,
@@ -84,7 +84,7 @@ namespace Forge.Security.Jwt.Client.Services
             _authenticationStateProvider = (IJwtTokenAuthenticationStateProvider)authenticationStateProvider;
             _dataStore = dataStore;
             _options = options.Value;
-            
+
             _logger.LogDebug("JwtTokenRefreshHostedService.ctor, IAuthenticationService, hash: {Hash}", authenticationService.GetHashCode());
             _logger.LogDebug("JwtTokenRefreshHostedService.ctor, AuthenticationStateProvider, hash: {Hash}", authenticationStateProvider.GetHashCode());
         }
@@ -99,10 +99,10 @@ namespace Forge.Security.Jwt.Client.Services
             _logger.LogInformation("StartAsync, starting");
 
             _timer = new Timer(DoWork, null, Timeout.Infinite, 0);
-            
+
             _authenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChangedEventHandler;
 
-            await ConfigureTimerAsync();
+            await ConfigureTimerAsync().ConfigureAwait(false);
 
             _logger.LogInformation("StartAsync, started");
         }
@@ -150,12 +150,12 @@ namespace Forge.Security.Jwt.Client.Services
         {
             _logger.LogInformation("AuthenticationStateChangedEventHandler, authentication state changed");
 
-            await ConfigureTimerAsync();
+            await ConfigureTimerAsync().ConfigureAwait(false);
         }
 
         private async Task ConfigureTimerAsync()
         {
-            _parsedTokenData = await GetParsedTokenDataAsync();
+            _parsedTokenData = await GetParsedTokenDataAsync().ConfigureAwait(false);
 
             _logger.LogDebug("ConfigureTimerAsync, current time: {CurrentTime}, refresh token will expire: {RefreshTokenExpireAt}", DateTime.UtcNow.ToString("yyyy.MM.dd HH:mm:ss:ttt"), _parsedTokenData.RefreshTokenExpireAt.ToString("yyyy.MM.dd HH:mm:ss:ttt"));
             if (_parsedTokenData.RefreshTokenExpireAt < DateTime.UtcNow)
@@ -178,7 +178,7 @@ namespace Forge.Security.Jwt.Client.Services
         private async Task<ParsedTokenData> GetParsedTokenDataAsync()
         {
             ParsedTokenData result = _dataStore.TokenData;
-            if (string.IsNullOrWhiteSpace(result.AccessToken)) result = await _authenticationStateProvider.GetParsedTokenDataAsync();
+            if (string.IsNullOrWhiteSpace(result.AccessToken)) result = await _authenticationStateProvider.GetParsedTokenDataAsync().ConfigureAwait(false);
             return result;
         }
 
@@ -199,7 +199,7 @@ namespace Forge.Security.Jwt.Client.Services
             try
             {
                 _logger.LogInformation("DoWorkAsync, trying to refresh the token...");
-                await _authenticationService.RefreshTokenAsync();
+                await _authenticationService.RefreshTokenAsync().ConfigureAwait(false);
                 _logger.LogInformation("DoWorkAsync, token successfully refreshed");
             }
             catch (AuthenticationException authEx)
@@ -207,24 +207,24 @@ namespace Forge.Security.Jwt.Client.Services
                 _logger.LogError(authEx, "DoWorkAsync, failed to refresh token because of authentication error");
                 _timer?.Change(Timeout.Infinite, 0);
                 RaiseOnAuthenticationError();
-                await Task.Delay(1000);
-                await ConfigureTimerAsync();
+                await Task.Delay(1000).ConfigureAwait(false);
+                await ConfigureTimerAsync().ConfigureAwait(false);
             }
             catch (TokenExpiredException tex)
             {
                 _logger.LogError(tex, "DoWorkAsync, failed to refresh token because the refresh token has expired");
                 _timer?.Change(Timeout.Infinite, 0);
                 RaiseOnTokenExpired();
-                await Task.Delay(1000);
-                await ConfigureTimerAsync();
+                await Task.Delay(1000).ConfigureAwait(false);
+                await ConfigureTimerAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "DoWorkAsync, failed to refresh token");
                 _timer?.Change(Timeout.Infinite, 0);
                 RaiseOnTokenRefreshError(ex);
-                await Task.Delay(1000);
-                await ConfigureTimerAsync();
+                await Task.Delay(1000).ConfigureAwait(false);
+                await ConfigureTimerAsync().ConfigureAwait(false);
             }
         }
 
