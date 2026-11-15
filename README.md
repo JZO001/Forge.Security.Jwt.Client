@@ -54,7 +54,7 @@ This method is not recommended in the most cases, try to avoid using it.
 
 ## Usage
 I have created a few examples about how to use Forge.Security.Jwt.Client in WASM / MAUI application.
-Please find Forge.Yode solution in my repositories, the "Apps" namespace entries in the projects means an application type:
+Please find Forge.Yoda solution in my repositories, the "Apps" namespace entries in the projects means an application type:
 - ASP.NET Core Hosted
 - MAUI
 - WinForms

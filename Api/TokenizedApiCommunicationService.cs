@@ -84,7 +84,9 @@ namespace Forge.Security.Jwt.Client.Api
             DataStore dataStore,
             IOptions<TokenizedApiCommunicationServiceOptions> options,
             IOptions<JwtClientAuthenticationCoreOptions> authOptions)
-            : this(logger, serializer, httpClientFactory, dataStore, options?.Value, authOptions?.Value)
+            : this(logger, serializer, httpClientFactory, dataStore,
+                  (options ?? throw new ArgumentNullException(nameof(options))).Value,
+                  (authOptions ?? throw new ArgumentNullException(nameof(authOptions))).Value)
         {
         }
 

@@ -310,7 +310,12 @@ namespace Forge.Security.Jwt.Client.Services
             if (task.Result.User.Identity.IsAuthenticated)
             {
                 ClaimsIdentity claimsIdentity = (ClaimsIdentity)task.Result.User.Identity;
-                Claim userIdClaim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+                Claim
+#if NETSTANDARD2_0
+#else
+                    ?
+#endif
+                    userIdClaim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
 
                 if (userIdClaim is null)
                 {
